@@ -1,3 +1,53 @@
+
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "restaurant-1",
+      "description": "A vibrant and delicious Italian pasta dish.",
+      "imageUrl": "https://picsum.photos/seed/101/600/400",
+      "imageHint": "italian pasta"
+    },
+    {
+      "id": "restaurant-2",
+      "description": "Fresh and colorful sushi rolls on a platter.",
+      "imageUrl": "https://picsum.photos/seed/102/600/400",
+      "imageHint": "sushi platter"
+    },
+    {
+      "id": "restaurant-3",
+      "description": "A juicy and well-cooked burger with fries.",
+      "imageUrl": "https://picsum.photos/seed/103/600/400",
+      "imageHint": "burger fries"
+    },
+    {
+      "id": "restaurant-4",
+      "description": "Spicy and aromatic Indian curry in a bowl.",
+      "imageUrl": "https://picsum.photos/seed/104/600/400",
+      "imageHint": "indian curry"
+    },
+    {
+      "id": "restaurant-5",
+      "description": "A traditional Mexican taco with fresh toppings.",
+      "imageUrl": "https://picsum.photos/seed/105/600/400",
+      "imageHint": "mexican taco"
+    },
+    {
+      "id": "restaurant-6",
+      "description": "A healthy and fresh Mediterranean salad.",
+      "imageUrl": "https://picsum.photos/seed/106/600/400",
+      "imageHint": "mediterranean salad"
+    },
+    {
+      "id": "restaurant-7",
+      "description": "Sizzling Thai stir-fry in a wok.",
+      "imageUrl": "https://picsum.photos/seed/107/600/400",
+      "imageHint": "thai stir-fry"
+    },
+    {
+      "id": "restaurant-8",
+      "description": "A warm bowl of Vietnamese Pho.",
+      "imageUrl": "https://picsum.photos/seed/108/600/400",
+      "imageHint": "vietnamese pho"
+    }
+  ]
 }
