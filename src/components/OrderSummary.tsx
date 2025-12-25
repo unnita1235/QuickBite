@@ -20,10 +20,10 @@ export default function OrderSummary() {
               <Image src={item.image} alt={item.name} width={40} height={40} className="rounded-md object-cover h-10 w-10"/>
               <div>
                 <p className="font-semibold">{item.name}</p>
-                <p className="text-sm text-muted-foreground">Qty: 1</p>
+                <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
               </div>
             </div>
-            <p className="font-semibold">${item.price.toFixed(2)}</p>
+            <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
           </div>
         ))}
       </CardContent>

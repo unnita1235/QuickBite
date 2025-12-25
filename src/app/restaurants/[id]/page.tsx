@@ -6,9 +6,9 @@ import { Star, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface RestaurantPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function generateStaticParams() {
@@ -17,8 +17,9 @@ export async function generateStaticParams() {
   }));
 }
 
-export default function RestaurantPage({ params }: RestaurantPageProps) {
-  const restaurant = restaurants.find((r) => r.id === params.id);
+export default async function RestaurantPage({ params }: RestaurantPageProps) {
+  const { id } = await params;
+  const restaurant = restaurants.find((r) => r.id === id);
 
   if (!restaurant) {
     notFound();

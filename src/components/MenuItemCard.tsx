@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { memo } from 'react';
 import { Button } from './ui/button';
 import { useCart } from '@/hooks/useCart';
 import type { MenuItem } from '@/lib/data';
@@ -11,7 +12,11 @@ interface MenuItemCardProps {
   item: MenuItem;
 }
 
-export default function MenuItemCard({ item }: MenuItemCardProps) {
+/**
+ * MenuItemCard component displays a menu item with add to cart functionality.
+ * Memoized to prevent unnecessary re-renders when menu list updates.
+ */
+const MenuItemCard = memo(function MenuItemCard({ item }: MenuItemCardProps) {
   const { addToCart } = useCart();
   const { toast } = useToast();
 
@@ -47,4 +52,6 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
       </div>
     </div>
   );
-}
+});
+
+export default MenuItemCard;

@@ -17,9 +17,10 @@ export async function getRecommendedRestaurants(cuisinePreference: string): Prom
       restaurants: restaurantDataForAI,
     });
 
-    return recommendedNames;
+    return recommendedNames || [];
   } catch (error) {
     console.error('Error getting AI recommendations:', error);
-    return [];
+    // Re-throw error so the UI can handle it
+    throw new Error('Failed to get AI recommendations. Please try again.');
   }
 }

@@ -3,6 +3,7 @@
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://quick-bite-mu.vercel.app/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-blue)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org)
+[![CI/CD](https://github.com/unnita1235/QuickBite/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/unnita1235/QuickBite/actions)
 
 > A modern food delivery platform showcasing restaurant listings, menu browsing, and delivery time estimates.
 
@@ -56,11 +57,24 @@ cd QuickBite
 # Install dependencies
 npm install
 
+# Set up environment variables
+cp .env.example .env
+# Edit .env and add your Google AI API key
+# Get your API key from: https://aistudio.google.com/app/apikey
+
 # Run development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:9002](http://localhost:9002)
+
+### Environment Variables
+
+The application requires the following environment variables:
+
+- `GOOGLE_GENAI_API_KEY`: Your Google AI API key for the Genkit AI recommendations feature. Get your API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+
+Copy `.env.example` to `.env` and fill in your API key.
 
 ---
 
@@ -108,10 +122,57 @@ QuickBite/
 | Restaurant details | ✅ Complete |
 | Category filtering | ✅ Complete |
 | User authentication | 📅 Planned |
-| Shopping cart | 📅 Planned |
-| Order placement | 📅 Planned |
+| Shopping cart | ✅ Complete |
+| Order placement | ✅ Complete |
+| AI Recommendations | ✅ Complete |
 | Payment integration | 📅 Planned |
 | Order tracking | 📅 Planned |
+
+---
+
+## 📦 Dependencies
+
+### Core Dependencies
+- **Next.js 15**: Framework and routing
+- **React 18**: UI library
+- **TypeScript**: Type safety
+- **Tailwind CSS**: Styling
+- **Genkit AI**: AI-powered restaurant recommendations
+- **Radix UI**: Accessible component primitives
+
+### Optional/Unused Dependencies
+The following dependencies are included but not currently used in the application:
+- `firebase`: Reserved for future authentication/database features (see roadmap)
+- `react-hook-form`, `recharts`, `embla-carousel-react`, `date-fns`: Part of UI component library, available for future use
+- `patch-package`: Dependency patching tool (no active patches)
+
+These can be removed if bundle size is a concern, but are kept for potential future features.
+
+---
+
+## 🧪 Testing & Development
+
+For detailed information on testing and development, see:
+
+- **[DEVELOPMENT.md](./DEVELOPMENT.md)** - Complete development guide
+- **[TESTING.md](./TESTING.md)** - Testing guide and examples
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Deployment automation guide
+
+### Quick Commands
+
+```bash
+# Run tests
+npm test
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Type check
+npm run typecheck
+```
 
 ---
 

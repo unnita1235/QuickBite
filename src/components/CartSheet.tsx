@@ -9,14 +9,14 @@ import {
   SheetFooter,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Trash2 } from 'lucide-react';
+import { ShoppingCart, Trash2, Plus, Minus } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import Image from 'next/image';
 import { Separator } from './ui/separator';
 import Link from 'next/link';
 
 export default function CartSheet() {
-  const { cartItems, removeFromCart, getTotalPrice } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, getTotalPrice } = useCart();
 
   return (
     <Sheet>
@@ -25,7 +25,7 @@ export default function CartSheet() {
           <ShoppingCart className="h-5 w-5" />
           {cartItems.length > 0 && (
             <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
-              {cartItems.length}
+              {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
             </span>
           )}
         </Button>
@@ -49,15 +49,41 @@ export default function CartSheet() {
                     />
                     <div className="flex-1">
                       <p className="font-semibold">{item.name}</p>
-                      <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
+                      <p className="text-sm text-muted-foreground">${item.price.toFixed(2)} each</p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeFromCart(item.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-muted-foreground" />
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 border rounded-md">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          aria-label={`Decrease quantity of ${item.name}`}
+                        >
+                          <Minus className="h-3 w-3" aria-hidden="true" />
+                        </Button>
+                        <span className="px-2 text-sm font-medium min-w-[2rem] text-center">
+                          {item.quantity}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          aria-label={`Increase quantity of ${item.name}`}
+                        >
+                          <Plus className="h-3 w-3" aria-hidden="true" />
+                        </Button>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeFromCart(item.id)}
+                        aria-label={`Remove ${item.name} from cart`}
+                      >
+                        <Trash2 className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>

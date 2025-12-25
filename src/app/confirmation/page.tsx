@@ -5,10 +5,29 @@ import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/useCart';
 import { CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { restaurants } from '@/lib/data';
 
 export default function ConfirmationPage() {
   const { clearCart, cartItems } = useCart();
+
+  // Calculate delivery time based on restaurants in cart
+  const deliveryTime = useMemo(() => {
+    if (cartItems.length === 0) return 0;
+    
+    const restaurantIds = new Set<string>();
+    cartItems.forEach(item => {
+      const restaurantId = item.id.split('-')[0];
+      restaurantIds.add(restaurantId);
+    });
+    
+    const deliveryTimes = Array.from(restaurantIds).map(id => {
+      const restaurant = restaurants.find(r => r.id === id);
+      return restaurant?.deliveryTime || 0;
+    });
+    
+    return Math.max(...deliveryTimes, 0);
+  }, [cartItems]);
 
   // If the user navigates here directly without items, redirect them.
   // We don't clear cart immediately to allow refresh.
@@ -47,7 +66,7 @@ export default function ConfirmationPage() {
           Order Confirmed!
         </h1>
         <p className="text-lg text-muted-foreground mb-8">
-          Thank you for your order. Your food is on its way and will arrive in approximately 30-45 minutes.
+          Thank you for your order. Your food is on its way and will arrive in approximately {deliveryTime} {deliveryTime === 1 ? 'minute' : 'minutes'}.
         </p>
         <div className="text-left mb-8">
           <OrderSummary />

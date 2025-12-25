@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { memo } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Restaurant } from '@/lib/data';
@@ -10,7 +11,11 @@ interface RestaurantCardProps {
   isRecommended: boolean;
 }
 
-export default function RestaurantCard({ restaurant, isRecommended }: RestaurantCardProps) {
+/**
+ * RestaurantCard component displays a preview card for a restaurant.
+ * Memoized to prevent unnecessary re-renders when parent component updates.
+ */
+const RestaurantCard = memo(function RestaurantCard({ restaurant, isRecommended }: RestaurantCardProps) {
   return (
     <Link href={`/restaurants/${restaurant.id}`} className="group block">
       <Card className="h-full overflow-hidden transition-all duration-300 ease-in-out group-hover:shadow-xl group-hover:-translate-y-1">
@@ -47,4 +52,6 @@ export default function RestaurantCard({ restaurant, isRecommended }: Restaurant
       </Card>
     </Link>
   );
-}
+});
+
+export default RestaurantCard;

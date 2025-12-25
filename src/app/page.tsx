@@ -6,39 +6,61 @@ import RestaurantCard from '@/components/RestaurantCard';
 import SearchBar from '@/components/SearchBar';
 import { getRecommendedRestaurants } from '@/actions/recommend';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 export default function Home() {
   const [query, setQuery] = useState('');
   const [recommendedNames, setRecommendedNames] = useState<string[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [aiSearched, setAiSearched] = useState(false);
+  const [aiError, setAiError] = useState(false);
 
   useEffect(() => {
     if (query.length > 2) {
       setIsSearching(true);
       setAiSearched(true);
+      setAiError(false);
       const handleSearch = async () => {
-        const recommendations = await getRecommendedRestaurants(query);
-        setRecommendedNames(recommendations);
-        setIsSearching(false);
+        try {
+          const recommendations = await getRecommendedRestaurants(query);
+          setRecommendedNames(recommendations);
+          setAiError(false);
+        } catch (error) {
+          console.error('Failed to get AI recommendations:', error);
+          setAiError(true);
+          setRecommendedNames([]);
+        } finally {
+          setIsSearching(false);
+        }
       };
       handleSearch();
     } else {
       setRecommendedNames([]);
       setAiSearched(false);
+      setAiError(false);
     }
   }, [query]);
 
+  /**
+   * Filters and sorts restaurants based on search query and AI recommendations.
+   * - If no query: returns all restaurants
+   * - If AI recommendations exist: separates recommended restaurants (shown first) from others
+   * - Applies text-based filtering on restaurant names and cuisines
+   * - Returns recommended restaurants first, followed by filtered others
+   */
   const filteredRestaurants = useMemo(() => {
     let allRestaurants = [...restaurants];
     let recommended: Restaurant[] = [];
     let others: Restaurant[] = [];
 
+    // No search active - return all restaurants
     if (query.length === 0 && !aiSearched) {
       return allRestaurants;
     }
 
     if (recommendedNames.length > 0) {
+      // AI provided recommendations - separate recommended from others
       const recommendedSet = new Set(recommendedNames);
       allRestaurants.forEach(restaurant => {
         if (recommendedSet.has(restaurant.name)) {
@@ -47,21 +69,21 @@ export default function Home() {
           others.push(restaurant);
         }
       });
-      // Simple text search on the rest
+      // Apply text search filter on non-recommended restaurants
       others = others.filter(
         (r) =>
           r.name.toLowerCase().includes(query.toLowerCase()) ||
           r.cuisine.toLowerCase().includes(query.toLowerCase())
       );
     } else if (aiSearched) {
-      // AI search returned no results, so we do a full text search
+      // AI search was attempted but returned no results - do full text search
       others = allRestaurants.filter(
         (r) =>
           r.name.toLowerCase().includes(query.toLowerCase()) ||
           r.cuisine.toLowerCase().includes(query.toLowerCase())
       );
     } else {
-      // AI search is not active, just filter
+      // AI search not active, just apply text filter
       others = allRestaurants.filter(
         (r) =>
           r.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -69,6 +91,7 @@ export default function Home() {
       );
     }
 
+    // Return recommended restaurants first, then filtered others
     return [...recommended, ...others];
   }, [query, recommendedNames, aiSearched]);
 
@@ -86,8 +109,18 @@ export default function Home() {
       <div className="mb-8">
         <SearchBar onSearch={setQuery} isSearching={isSearching} />
       </div>
+
+      {aiError && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>AI Search Unavailable</AlertTitle>
+          <AlertDescription>
+            We couldn't connect to our AI recommendation service. Showing text-based search results instead.
+          </AlertDescription>
+        </Alert>
+      )}
       
-      {aiSearched && recommendedNames.length > 0 && (
+      {aiSearched && recommendedNames.length > 0 && !aiError && (
         <h2 className="font-headline text-3xl font-semibold tracking-tight mb-6">
           AI Recommendations for &quot;{query}&quot;
         </h2>
