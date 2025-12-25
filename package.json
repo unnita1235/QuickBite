@@ -1,6 +1,21 @@
 {
-  "name": "nextn",
-  "version": "0.1.0",
+  "name": "quickbite",
+  "version": "1.0.0",
+  "description": "A modern food delivery platform with AI-powered restaurant recommendations",
+  "author": "Unni T A <unnita1235@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/unnita1235/QuickBite.git"
+  },
+  "keywords": [
+    "nextjs",
+    "food-delivery",
+    "restaurant",
+    "typescript",
+    "tailwindcss",
+    "ai-recommendations"
+  ],
+  "license": "MIT",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack -p 9002",

@@ -19,6 +19,7 @@ describe('SearchBar', () => {
     expect(screen.getByPlaceholderText(/Search for restaurants or cuisine/)).toBeInTheDocument();
   });
 
+
   it('shows loading indicator when searching', () => {
     render(<SearchBar onSearch={mockOnSearch} isSearching={true} />);
     // The loader is an SVG with animate-spin class, check by class or querySelector
