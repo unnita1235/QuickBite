@@ -50,8 +50,8 @@ export default function Home() {
    * - Returns recommended restaurants first, followed by filtered others
    */
   const filteredRestaurants = useMemo(() => {
-    let allRestaurants = [...restaurants];
-    let recommended: Restaurant[] = [];
+    const allRestaurants = [...restaurants];
+    const recommended: Restaurant[] = [];
     let others: Restaurant[] = [];
 
     // No search active - return all restaurants
@@ -115,14 +115,14 @@ export default function Home() {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>AI Search Unavailable</AlertTitle>
           <AlertDescription>
-            We couldn't connect to our AI recommendation service. Showing text-based search results instead.
+            We couldn&apos;t connect to our AI recommendation service. Showing text-based search results instead.
           </AlertDescription>
         </Alert>
       )}
       
       {aiSearched && recommendedNames.length > 0 && !aiError && (
         <h2 className="font-headline text-3xl font-semibold tracking-tight mb-6">
-          AI Recommendations for &quot;{query}&quot;
+          AI Recommendations for &ldquo;{query}&rdquo;
         </h2>
       )}
 

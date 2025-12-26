@@ -75,6 +75,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.3",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.6.1",
@@ -83,8 +84,8 @@
     "@types/react-dom": "^18",
     "@vitejs/plugin-react": "^4.3.1",
     "@vitest/ui": "^2.1.8",
-    "eslint": "9.39.2",
-    "eslint-config-next": "16.1.1",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.22",
     "genkit-cli": "^1.14.1",
     "jsdom": "^25.0.1",
     "postcss": "^8",

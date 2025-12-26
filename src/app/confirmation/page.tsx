@@ -48,7 +48,7 @@ export default function ConfirmationPage() {
          <div className="max-w-md mx-auto p-8">
             <h1 className="font-headline text-3xl mb-2">No Order Found</h1>
             <p className="text-muted-foreground mb-6">
-              It looks like you haven't placed an order yet.
+              It looks like you haven&apos;t placed an order yet.
             </p>
             <Button asChild>
               <Link href="/">Browse Restaurants</Link>
