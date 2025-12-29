@@ -20,7 +20,8 @@ export default function SearchBar({ onSearch, isSearching }: SearchBarProps) {
     return () => {
       clearTimeout(handler);
     };
-  }, [query, onSearch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query]);
 
   return (
     <div className="relative max-w-2xl mx-auto">
