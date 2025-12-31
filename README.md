@@ -1,115 +1,94 @@
-# 🍔 QuickBite - AI-Powered Food Delivery Platform
+# QuickBite - Restaurant Discovery Platform
 
-[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://quick-bite-mu.vercel.app/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
-[![Next.js](https://img.shields.io/badge/Next.js-15.3.3-black)](https://nextjs.org)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8)](https://tailwindcss.com)
-[![Vercel](https://img.shields.io/badge/Deployed-Vercel-black)](https://vercel.com)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+> AI-powered restaurant browsing with Google Gemini integration, built with Next.js 15 and TypeScript.
 
-> A modern, fully-featured food delivery platform with AI-powered restaurant recommendations, built with Next.js 15, TypeScript, and Google Gemini AI.
+**Status**: ✅ Frontend + AI Integration (Working)  
+**Live Demo**: https://quick-bite-mu.vercel.app
 
 ---
 
-## 🌟 Highlights
+## 📸 What This Is
 
-- ✅ **80+ Tests Passed** - Comprehensive testing with 100% success rate
-- ⚡ **8ms Response Time** - Blazing fast production performance
-- 📱 **100% Mobile Responsive** - Works flawlessly on all devices
-- 🤖 **AI-Powered Search** - Smart restaurant recommendations
-- 🎨 **Modern UI/UX** - Beautiful, intuitive interface with Tailwind CSS
-- 🚀 **Production Ready** - Fully tested and deployed on Vercel
+QuickBite is a **restaurant discovery platform** featuring AI-powered search using Google Gemini. It demonstrates modern frontend development, AI integration, and responsive design.
+
+**Important**: This is a frontend application with AI search capabilities. No backend server, database, or actual order processing exists.
 
 ---
 
-## 🌐 Live Demo
+## ✨ Current Features
 
-**🔗 Visit:** [quick-bite-mu.vercel.app](https://quick-bite-mu.vercel.app/)
+### What Actually Works ✅
+- ✅ **Restaurant Browsing** - Browse 6+ restaurants with menus
+- ✅ **AI-Powered Search** - Google Gemini integration for smart recommendations
+- ✅ **Shopping Cart** - Add items to cart (localStorage only)
+- ✅ **Responsive Design** - Works on all device sizes
+- ✅ **Menu Display** - Detailed menu items with prices
+- ✅ **Restaurant Details** - Individual restaurant pages
 
-Experience the application live! Browse restaurants, search with AI, add items to cart, and simulate the complete food ordering experience.
-
----
-
-## ✨ Features
-
-### Core Functionality
-- 🏪 **Restaurant Discovery** - Browse 6+ restaurants with detailed information
-- 🔍 **AI-Powered Search** - Intelligent restaurant recommendations using Google Gemini
-- 📋 **Menu Browsing** - Complete menus with prices, descriptions, and images
-- 🛒 **Shopping Cart** - Add items, manage quantities, and persist cart data
-- 💳 **Checkout Process** - Streamlined order placement flow
-- ⭐ **Ratings & Reviews** - View restaurant ratings and delivery times
-
-### Technical Features
-- 📱 **Fully Responsive** - Mobile-first design for all screen sizes
-- ⚡ **Server-Side Rendering** - Fast initial page loads with Next.js 15
-- 🎨 **Modern UI Components** - Radix UI + shadcn/ui components
-- 🔒 **Type Safety** - Full TypeScript implementation
-- 🎯 **SEO Optimized** - Comprehensive meta tags and Open Graph support
-- 🌈 **Dark Mode Ready** - Theme support with Tailwind CSS
-- ♿ **Accessible** - ARIA labels and keyboard navigation
-- 📊 **Performance Optimized** - Image optimization and code splitting
+### What's Not Implemented ❌
+- ❌ No backend server
+- ❌ No database (restaurants are hardcoded)
+- ❌ No user accounts or authentication
+- ❌ No real order processing
+- ❌ No payment integration
+- ❌ No delivery tracking
+- ❌ Cart only persists in browser localStorage
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Frontend
-- **Framework:** [Next.js 15.3.3](https://nextjs.org) (App Router + Turbopack)
-- **Language:** [TypeScript 5.0](https://www.typescriptlang.org/)
-- **Styling:** [Tailwind CSS 3.4](https://tailwindcss.com)
-- **UI Components:** [Radix UI](https://www.radix-ui.com/) + [shadcn/ui](https://ui.shadcn.com/)
-- **State Management:** React Context API
-- **Icons:** [Lucide React](https://lucide.dev/)
+**Frontend**:
+- Next.js 15 (App Router + Turbopack)
+- TypeScript
+- Tailwind CSS
+- shadcn/ui components
+- React Context API
 
-### Backend & AI
-- **AI Framework:** [Google Genkit](https://firebase.google.com/docs/genkit)
-- **AI Model:** Gemini 2.5 Flash
-- **Server Actions:** Next.js Server Actions
-- **Data Persistence:** LocalStorage + Context
+**AI Integration**:
+- Google Genkit
+- Google Gemini 2.5 Flash
+- Server Actions
 
-### Development & Testing
-- **Testing:** [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/)
-- **Type Checking:** TypeScript strict mode
-- **Linting:** ESLint with Next.js config
-- **Package Manager:** npm
+**Deployment**:
+- Vercel
 
-### Deployment
-- **Hosting:** [Vercel](https://vercel.com)
-- **CI/CD:** Automated Vercel deployments
-- **Performance:** CDN + Edge Functions
-- **Analytics:** Built-in Vercel Analytics
+**Not Implemented**:
+- Backend API
+- Database
+- Payment gateway
+- Order management system
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Getting Started
 
 ### Prerequisites
-
-- **Node.js** 20.0 or higher
-- **npm** or **yarn** or **pnpm**
-- **Google AI API Key** ([Get one free](https://aistudio.google.com/app/apikey))
+- Node.js 18+
+- npm or yarn
+- Google AI API Key (free from [AI Studio](https://aistudio.google.com/app/apikey))
 
 ### Installation
 
 ```bash
-# 1. Clone the repository
+# Clone repository
 git clone https://github.com/unnita1235/QuickBite.git
 cd QuickBite
 
-# 2. Install dependencies
+# Install dependencies
 npm install
 
-# 3. Set up environment variables
+# Set up environment variables
 cp .env.example .env.local
-# Edit .env.local and add your Google AI API key:
+
+# Add your Google AI API key to .env.local:
 # GOOGLE_GENAI_API_KEY=your_api_key_here
 
-# 4. Run development server
+# Run development server
 npm run dev
-```
 
-Open [http://localhost:9002](http://localhost:9002) in your browser.
+# Open http://localhost:9002
+```
 
 ---
 
@@ -118,311 +97,199 @@ Open [http://localhost:9002](http://localhost:9002) in your browser.
 ```
 QuickBite/
 ├── src/
-│   ├── app/                    # Next.js 15 App Router pages
-│   │   ├── layout.tsx         # Root layout with providers
-│   │   ├── page.tsx           # Homepage with restaurant grid
-│   │   ├── restaurants/       # Dynamic restaurant pages
-│   │   ├── checkout/          # Checkout page
-│   │   └── confirmation/      # Order confirmation
-│   ├── components/            # React components
-│   │   ├── ui/               # shadcn/ui components
-│   │   ├── Header.tsx        # Navigation header
-│   │   ├── SearchBar.tsx     # AI-powered search
-│   │   ├── RestaurantCard.tsx # Restaurant preview card
-│   │   ├── MenuList.tsx      # Menu display
-│   │   └── CartSheet.tsx     # Shopping cart sidebar
-│   ├── hooks/                 # Custom React hooks
-│   │   └── useCart.tsx       # Cart management hook
-│   ├── lib/                   # Utilities and data
-│   │   ├── data.ts           # Restaurant and menu data
-│   │   └── utils.ts          # Helper functions
-│   ├── actions/               # Server Actions
-│   │   └── recommend.ts      # AI recommendation action
-│   └── ai/                    # AI configuration
-│       ├── genkit.ts         # Genkit setup
-│       └── flows/            # AI flows
-├── docs/                      # Documentation
-│   ├── SETUP-GUIDE.md        # Detailed setup guide
-│   ├── DEPLOYMENT.md         # Deployment instructions
-│   ├── TESTING-REPORT.md     # Comprehensive testing report
-│   └── VERIFICATION-REPORT.md # Production verification
-├── public/                    # Static assets
-├── .env.example              # Environment variables template
-├── next.config.ts            # Next.js configuration
-├── tailwind.config.ts        # Tailwind CSS configuration
-├── tsconfig.json             # TypeScript configuration
-└── package.json              # Dependencies and scripts
+│   ├── app/
+│   │   ├── page.tsx              # Restaurant listing page
+│   │   ├── restaurants/[id]/     # Restaurant detail pages
+│   │   ├── checkout/             # Checkout page (UI only)
+│   │   └── confirmation/         # Order confirmation
+│   ├── components/
+│   │   ├── SearchBar.tsx         # AI search component
+│   │   ├── RestaurantCard.tsx    # Restaurant cards
+│   │   ├── MenuList.tsx          # Menu display
+│   │   └── CartSheet.tsx         # Shopping cart
+│   ├── actions/
+│   │   └── recommend.ts          # AI recommendation action
+│   ├── lib/
+│   │   └── data.ts               # Hardcoded restaurant data
+│   └── hooks/
+│       └── useCart.tsx           # Cart management
+└── package.json
 ```
 
 ---
 
-## 🎯 Available Scripts
+## 🤖 AI Features
 
-### Development
+### Google Gemini Integration
+
+The search feature uses Google Gemini 2.5 Flash to:
+- Understand natural language queries
+- Match user preferences to restaurants
+- Provide intelligent recommendations
+- Consider cuisine types and user intent
+
+**Example queries**:
+- "I want spicy noodles"
+- "Something healthy for lunch"
+- "Best burgers nearby"
+
+---
+
+## 🎯 What This Project Demonstrates
+
+### Skills Proven
+- ✅ AI integration (Google Gemini)
+- ✅ Next.js App Router
+- ✅ TypeScript
+- ✅ State management (React Context)
+- ✅ Responsive design
+- ✅ Clean component architecture
+- ✅ Server Actions
+- ✅ localStorage for cart persistence
+
+### What's Not Built Yet
+- ❌ Backend API
+- ❌ Database integration
+- ❌ User authentication
+- ❌ Real order processing
+- ❌ Payment handling
+
+---
+
+## 📊 Demo Data
+
+Includes 6 hardcoded restaurants:
+- **Bella Italia** - Italian cuisine
+- **Spice Route** - Indian food
+- **Dragon Wok** - Chinese dishes
+- **Fresh Bites** - Healthy options
+- **Burger House** - American burgers
+- **Sushi Master** - Japanese sushi
+
+Each restaurant has:
+- Menu items with prices
+- Restaurant description
+- Ratings and delivery time
+- Category tags
+
+**Note**: All data is static and hardcoded.
+
+---
+
+## 🔧 Available Scripts
 
 ```bash
-npm run dev          # Start development server (port 9002)
-npm run build        # Build for production
-npm run start        # Start production server
-npm run lint         # Run ESLint
-npm run typecheck    # Run TypeScript type checking
-```
-
-### Testing
-
-```bash
-npm test                  # Run tests
-npm run test:coverage     # Run tests with coverage
-npm run test:ui           # Run tests with UI
-npm run ci                # Run all checks (lint, typecheck, test, build)
-```
-
-### AI Development
-
-```bash
-npm run genkit:dev        # Start Genkit developer UI
-npm run genkit:watch      # Start Genkit with watch mode
+npm run dev           # Development server (port 9002)
+npm run build         # Production build
+npm run start         # Production server
+npm run lint          # ESLint
+npm test              # Run tests
+npm run test:coverage # Test coverage
 ```
 
 ---
 
-## 🧪 Testing & Verification
+## 📝 Current Limitations
 
-This project has been comprehensively tested with **100% success rate**:
+This is a **frontend + AI demo**:
 
-### Test Coverage
-- ✅ **80+ Tests Executed** - All passing
-- ✅ **9 Routes Tested** - Homepage, 6 restaurants, checkout, confirmation
-- ✅ **4 Device Types** - iPhone, Android, iPad, Desktop
-- ✅ **3 Server Configs** - Dev localhost, Dev 127.0.0.1, Production
-- ✅ **Zero Errors** - Clean server logs
-- ✅ **Performance Verified** - Sub-10ms production response times
-
-### Performance Metrics
-
-| Metric | Development | Production |
-|--------|-------------|------------|
-| Average Response | 120ms | 8ms |
-| Initial Load | 4.8s | 1.5s |
-| Bundle Size | - | 101-123 kB |
-| Success Rate | 100% | 100% |
-
-### Documentation
-- 📄 [Testing Report](./docs/TESTING-REPORT.md) - 498 lines of comprehensive testing
-- 📄 [Verification Report](./docs/VERIFICATION-REPORT.md) - Production readiness verification
-- 📄 [Setup Guide](./docs/SETUP-GUIDE.md) - Complete setup instructions
-- 📄 [Deployment Guide](./docs/DEPLOYMENT.md) - Vercel deployment guide
+1. **No Backend**: No server, database, or API
+2. **Static Data**: Restaurants hardcoded in code
+3. **localStorage Cart**: Cart doesn't sync across devices
+4. **No Orders**: Checkout is UI only, no real orders
+5. **No Auth**: No user accounts or login
+6. **Demo Only**: Not a real food delivery platform
 
 ---
 
-## 📱 Responsive Design
+## 🗺️ Development Roadmap
 
-QuickBite is fully responsive and works seamlessly across all devices:
+### Phase 1 (Current) - Frontend + AI ✅
+- [x] Restaurant browsing UI
+- [x] Google Gemini AI integration
+- [x] Shopping cart functionality
+- [x] Responsive design
+- [x] Search recommendations
 
-- 📱 **Mobile** (< 768px) - Single column layout, touch-optimized
-- 📱 **Tablet** (768px - 1024px) - Two column grid, optimized spacing
-- 💻 **Desktop** (> 1024px) - Three column grid, full features
-- 🖥️ **Large Screens** (> 1400px) - Contained layout, optimal reading width
+### Phase 2 (Planned) - Backend
+- [ ] Build Express.js backend
+- [ ] PostgreSQL database setup
+- [ ] Restaurant CRUD operations
+- [ ] Order management API
+- [ ] User authentication
 
-### Browser Support
-- ✅ Chrome 90+
-- ✅ Firefox 88+
-- ✅ Safari 14+
-- ✅ Edge 90+
-- ✅ Mobile browsers (iOS Safari, Chrome Mobile)
-
----
-
-## 🤖 AI-Powered Features
-
-### Smart Restaurant Recommendations
-
-Powered by **Google Gemini 2.5 Flash**, the search feature provides intelligent restaurant recommendations based on:
-
-- Cuisine preferences
-- Food types and ingredients
-- Dietary restrictions
-- User search intent
-
-### How It Works
-
-1. User enters search query (e.g., "spicy noodles")
-2. Query sent to Google Genkit AI flow
-3. AI analyzes restaurant data and matches preferences
-4. Returns ranked recommendations
-5. Results displayed with "AI Pick" badge
+### Phase 3 (Future) - Full Features
+- [ ] Real order processing
+- [ ] Payment integration (Stripe)
+- [ ] Delivery tracking
+- [ ] User accounts and history
+- [ ] Restaurant partner dashboard
 
 ---
 
-## 🎨 UI/UX Highlights
+## 🧪 Testing
 
-### Design System
-- **Colors:** Tailwind CSS custom color palette
-- **Typography:** Google Fonts (Alegreya + Belleza)
-- **Components:** Radix UI primitives with custom styling
-- **Animations:** Tailwind CSS animations + smooth transitions
-- **Icons:** Lucide React icon library
+Includes basic testing setup:
+- Vitest for unit tests
+- React Testing Library
+- Component tests
+- Frontend-only testing
 
-### Key Components
-- **RestaurantCard** - Memoized card with hover effects
-- **SearchBar** - Debounced input with AI integration
-- **CartSheet** - Slide-out cart with quantity controls
-- **MenuList** - Organized menu with add-to-cart actions
-- **Header** - Sticky navigation with cart indicator
+**Note**: Tests are for frontend components only, not backend functionality.
 
 ---
 
-## 🔒 Security & Best Practices
+## 🎨 Design Features
 
-### Implementation
-- ✅ Environment variables for sensitive data
-- ✅ API keys server-side only
-- ✅ Input validation and sanitization
-- ✅ Type-safe with TypeScript
-- ✅ Error boundaries for graceful failures
-- ✅ Secure localStorage usage
-- ✅ HTTPS enforced on production
-
-### Code Quality
-- ✅ ESLint configuration
-- ✅ TypeScript strict mode
-- ✅ Component memoization
-- ✅ Code splitting and lazy loading
-- ✅ Optimized images
-- ✅ SEO meta tags
-
----
-
-## 🚢 Deployment
-
-### Vercel (Recommended)
-
-The easiest way to deploy QuickBite:
-
-1. **Push to GitHub**
-   ```bash
-   git push origin main
-   ```
-
-2. **Connect to Vercel**
-   - Visit [vercel.com](https://vercel.com)
-   - Import your GitHub repository
-   - Configure environment variables
-
-3. **Add Environment Variables**
-   ```
-   GOOGLE_GENAI_API_KEY=your_api_key
-   ```
-
-4. **Deploy**
-   - Vercel will automatically build and deploy
-   - Get your live URL
-
-### Manual Deployment
-
-```bash
-# Build the project
-npm run build
-
-# Start production server
-npm run start
-```
-
-See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for detailed instructions.
-
----
-
-## 📚 Documentation
-
-### Guides
-- 📖 [Setup Guide](./docs/SETUP-GUIDE.md) - Complete setup instructions
-- 🚀 [Deployment Guide](./docs/DEPLOYMENT.md) - Deploy to Vercel
-- 🧪 [Testing Guide](./TESTING.md) - Testing information
-- 💻 [Development Guide](./DEVELOPMENT.md) - Development workflow
-- 🤝 [Contributing](./CONTRIBUTING.md) - Contribution guidelines
-
-### Reports
-- ✅ [Testing Report](./docs/TESTING-REPORT.md) - 80+ comprehensive tests
-- ✅ [Verification Report](./docs/VERIFICATION-REPORT.md) - Production verification
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please read the [Contributing Guide](./CONTRIBUTING.md) first.
-
-### Steps to Contribute
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
-## 🐛 Known Issues
-
-- AI search requires Google AI API key (get one free at [AI Studio](https://aistudio.google.com/app/apikey))
-- Cart data stored in localStorage (clears on browser data clear)
-- Demo app uses placeholder images (Picsum Photos)
-
----
-
-## 🗺️ Roadmap
-
-### Planned Features
-- [ ] User authentication and accounts
-- [ ] Real payment integration (Stripe)
-- [ ] Order history and tracking
-- [ ] Restaurant admin dashboard
-- [ ] Review and rating system
-- [ ] Real-time order updates
-- [ ] Multiple delivery addresses
-- [ ] Favorite restaurants
-- [ ] Promo codes and discounts
-- [ ] Mobile app (React Native)
+- Modern, clean interface
+- Card-based layouts
+- Smooth animations
+- Mobile-first responsive design
+- Professional color scheme
+- Intuitive navigation
 
 ---
 
 ## 📄 License
 
-This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE) file for details.
+MIT License - Portfolio/Learning Project
 
 ---
 
 ## 👤 Author
 
-**Unni T A**
+**Unni T A**  
+Frontend Developer specializing in React/Next.js and AI integration
 
-- 🌐 GitHub: [@unnita1235](https://github.com/unnita1235)
-- 📧 Email: unnita1235@gmail.com
-- 🔗 LinkedIn: [Connect on LinkedIn](https://linkedin.com/in/unnita)
+- GitHub: [@unnita1235](https://github.com/unnita1235)
+- Email: unnita1235@gmail.com
 
 ---
 
 ## 🙏 Acknowledgments
 
-- [Next.js](https://nextjs.org) - React framework
-- [Vercel](https://vercel.com) - Hosting and deployment
-- [Google Genkit](https://firebase.google.com/docs/genkit) - AI framework
-- [Tailwind CSS](https://tailwindcss.com) - Styling
-- [Radix UI](https://www.radix-ui.com/) - UI primitives
-- [shadcn/ui](https://ui.shadcn.com/) - Component library
-- [Lucide](https://lucide.dev/) - Icons
+- Google Genkit team for AI framework
+- Next.js for excellent framework
+- Vercel for easy deployment
+- shadcn/ui for component library
+- Tailwind CSS for styling
 
 ---
 
-## ⭐ Support
+## 💡 What I Learned
 
-If you find this project helpful, please give it a ⭐ on GitHub!
+This project showcases:
+- Successfully integrating AI (Google Gemini) into web apps
+- Building responsive, modern UIs
+- State management with React Context
+- Next.js App Router and Server Actions
+- TypeScript for type safety
+- Professional component architecture
+
+Currently learning backend development to make this a complete full-stack application!
 
 ---
 
-<div align="center">
+**Status**: ✅ Working frontend with AI - Backend in development
 
-**Built with ❤️ using Next.js 15 and TypeScript**
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/unnita1235/QuickBite)
-
-</div>
+*Last updated: January 2026*
