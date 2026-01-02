@@ -2,8 +2,9 @@
 
 > AI-powered restaurant browsing with Google Gemini integration, built with Next.js 15 and TypeScript.
 
-**Status**: ✅ Frontend + AI Integration (Working)  
-**Live Demo**: https://quick-bite-mu.vercel.app
+**Status:** ✅ **FULL-STACK PRODUCTION READY** - Frontend + Backend DEPLOYED**Live Demo**: https://quick-bite-mu.vercel.app
+
+**Backend API:** https://quickbite-backend-zsdz.onrender.com
 
 ---
 
@@ -12,7 +13,7 @@
 QuickBite is a **restaurant discovery platform** featuring AI-powered search using Google Gemini. It demonstrates modern frontend development, AI integration, and responsive design.
 
 **Important**: This is a frontend application with AI search capabilities. No backend server, database, or actual order processing exists.
-
+**NEW:** Backend API is now LIVE and FULLY DEPLOYED on Render! ✅
 ---
 
 ## ✨ Current Features
