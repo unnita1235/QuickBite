@@ -115,15 +115,13 @@ export default function Home() {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>AI Search Unavailable</AlertTitle>
           <AlertDescription>
-            We couldn't connect to our AI recommendation service. Showing text-based search results instead.
-          </AlertDescription>
+           We could not connect to our AI recommendation service. Showing text-based search results instead.          </AlertDescription>
         </Alert>
       )}
       
       {aiSearched && recommendedNames.length > 0 && !aiError && (
         <h2 className="font-headline text-3xl font-semibold tracking-tight mb-6">
-          AI Recommendations for &quot;{query}&quot;
-        </h2>
+           AI Recommendations for \"{query}\"        </h2>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
