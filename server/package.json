@@ -17,7 +17,7 @@
     "bcrypt": "^5.1.0",
     "jsonwebtoken": "^9.0.0",
     "express-validator": "^7.0.0",
-        "express-rate-limit": "^7.1.5",
+        "express-rate-limit": "^7.1.5"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"
