@@ -84,7 +84,7 @@ const fetchApi = async<T>(
 
   const token = getAuthToken();
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    (headers as any)['Authorization'] = `Bearer ${token}`;
   }
 
   try {
