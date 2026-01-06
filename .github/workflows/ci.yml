@@ -22,7 +22,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-run: npm install
+  run: npm install
       - name: Run ESLint
         run: npm run lint || true
 
@@ -44,7 +44,7 @@ run: npm install
           cache: 'npm'
 
       - name: Install dependencies
-run: npm install
+  run: npm install
       - name: Run tests
         run: npm test -- --run
 
@@ -63,7 +63,7 @@ run: npm install
           cache: 'npm'
 
       - name: Install dependencies
-run: npm install
+  run: npm install
       - name: Build application
         run: npm run build
         env:
