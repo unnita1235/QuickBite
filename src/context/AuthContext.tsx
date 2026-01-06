@@ -14,8 +14,8 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{success: boolean}>;
+  register: (email: string, password: string, name: string) => Promise<{success: boolean}>;
   logout: () => void;
 }
 
@@ -59,10 +59,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       localStorage.setItem('authToken', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       router.push('/dashboard');
+          return { success: true };
     } catch (error) {
       console.error('Login error:', error);
-      throw error;
-    }
+return { success: false };    }
   };
 
   const register = async (email: string, password: string, name: string) => {
@@ -81,10 +81,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       // Auto-login after registration
       await login(email, password);
+          return { success: true };
     } catch (error) {
       console.error('Registration error:', error);
-      throw error;
-    }
+return { success: false };    }
   };
 
   const logout = () => {
