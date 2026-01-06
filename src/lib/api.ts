@@ -30,7 +30,6 @@ export async function fetchRestaurants(): Promise<Restaurant[]> {
       headers: {
         'Content-Type': 'application/json',
       },
-      cache: 'revalidate',
       next: { revalidate: 60 }, // Revalidate every 60 seconds
     });
 
@@ -54,7 +53,6 @@ export async function fetchRestaurantById(id: string): Promise<Restaurant | null
       headers: {
         'Content-Type': 'application/json',
       },
-      cache: 'revalidate',
       next: { revalidate: 60 },
     });
 
