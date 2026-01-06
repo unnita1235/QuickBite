@@ -70,10 +70,10 @@ export default function RootLayout({
               <main className="flex-1">{children}</main>
             </div>
             <Toaster />
-          
+
+                        </CartProvider>
                       </AuthProvider>
-            </CartProvider>
-        </ErrorBoundary>
+       </ErrorBoundary>
       </body>
     </html>
   );
