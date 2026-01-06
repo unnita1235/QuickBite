@@ -25,7 +25,7 @@ const apiFetch = async <T = any>(
   // Add JWT token if available
   const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    (headers as any)['Authorization'] = `Bearer ${token}`;
   }
 
   try {
