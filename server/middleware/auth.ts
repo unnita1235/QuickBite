@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 interface AuthRequest extends Request {
   userId?: string | number;
-  user?: JwtPayload | any;
+  user?: any;
 }
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -41,9 +41,8 @@ export const authenticateToken = (
       });
       return;
     }
-    const decodedUser = user as JwtPayload;
-    req.userId = (decodedUser as any).id;
-    req.user = decodedUser;
+    req.userId = user.id;
+    req.user = user;
     next();
   });
 };
@@ -55,23 +54,27 @@ export const authenticateToken = (
  */
 export const generateToken = (
   userId: string | number,
-  expiresIn = '24h'
+  expiresIn?: string
 ): string => {
-  return jwt.sign(
-    {
-      id: userId,
-      iat: Math.floor(Date.now() / 1000),
-    },
-    JWT_SECRET,
-    { expiresIn }
-  );
+  const payload: any = {
+    id: userId,
+  };
+  
+  const options: any = {};
+  if (expiresIn) {
+    options.expiresIn = expiresIn;
+  } else {
+    options.expiresIn = '24h';
+  }
+  
+  return jwt.sign(payload, JWT_SECRET, options) as string;
 };
 
 /**
  * Verify JWT Token
  * @param token - JWT token to verify
  */
-export const verifyToken = (token: string): JwtPayload | string => {
+export const verifyToken = (token: string): any => {
   try {
     return jwt.verify(token, JWT_SECRET);
   } catch (error) {
@@ -83,7 +86,7 @@ export const verifyToken = (token: string): JwtPayload | string => {
  * Decode JWT Token (without verification)
  * @param token - JWT token to decode
  */
-export const decodeToken = (token: string): JwtPayload | null => {
+export const decodeToken = (token: string): any => {
   return jwt.decode(token);
 };
 
