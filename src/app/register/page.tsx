@@ -18,7 +18,7 @@ import { AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register, isAuthenticated, isLoading, authError } = useAuth();
+  const { register, isAuthenticated, isLoading } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
