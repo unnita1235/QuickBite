@@ -355,6 +355,8 @@ app.put('/api/users/profile', verifyToken, async (req, res) => {
   }
 });
 
+// Root endpoint
+app.get('/', (req, res) => res.status(200).json({ success: true, message: 'QuickBite Food Delivery API v1.0.0', endpoints: { health: '/api/health', auth: '/api/auth', restaurants: '/api/restaurants', orders: '/api/orders', users: '/api/users' }, documentation: 'See API_DOCUMENTATION.md for full API details' }));
 // ===== ERROR HANDLERS =====
 app.use((req, res) => {
   res.status(404).json({ 
