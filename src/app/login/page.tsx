@@ -49,10 +49,9 @@ setError('Login failed');    }
           <CardDescription>Sign in to your QuickBite account</CardDescription>
         </CardHeader>
         <CardContent>
-          {(error || authError) && (
-            <Alert variant="destructive" className="mb-4">
+{error && (            <Alert variant="destructive" className="mb-4">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error || authError}</AlertDescription>
+              <AlertDescription>{{error}/AlertDescription>
             </Alert>
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
