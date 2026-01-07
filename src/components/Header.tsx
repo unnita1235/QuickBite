@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import CartSheet from './CartSheet';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, ShoppingBag, Menu } from 'lucide-react';
+import { LogOut, User } from 'lucide-react';
 
 export default function Header() {
   const { user, logout } = useAuth();
