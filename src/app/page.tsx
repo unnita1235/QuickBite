@@ -50,49 +50,40 @@ export default function Home() {
    * - Returns recommended restaurants first, followed by filtered others
    */
   const filteredRestaurants = useMemo(() => {
-    let allRestaurants = [...restaurants];
-    let recommended: Restaurant[] = [];
-    let others: Restaurant[] = [];
+    // Helper function to check if restaurant matches text query
+    const matchesTextSearch = (restaurant: Restaurant): boolean => {
+      const lowerQuery = query.toLowerCase();
+      return (
+        restaurant.name.toLowerCase().includes(lowerQuery) ||
+        restaurant.cuisine.toLowerCase().includes(lowerQuery)
+      );
+    };
 
     // No search active - return all restaurants
     if (query.length === 0 && !aiSearched) {
-      return allRestaurants;
+      return restaurants;
     }
 
+    // If AI provided recommendations, separate them from others
     if (recommendedNames.length > 0) {
-      // AI provided recommendations - separate recommended from others
       const recommendedSet = new Set(recommendedNames);
-      allRestaurants.forEach(restaurant => {
+      const recommended: Restaurant[] = [];
+      const others: Restaurant[] = [];
+
+      restaurants.forEach(restaurant => {
         if (recommendedSet.has(restaurant.name)) {
           recommended.push(restaurant);
-        } else {
+        } else if (matchesTextSearch(restaurant)) {
+          // Only include non-recommended if they match text search
           others.push(restaurant);
         }
       });
-      // Apply text search filter on non-recommended restaurants
-      others = others.filter(
-        (r) =>
-          r.name.toLowerCase().includes(query.toLowerCase()) ||
-          r.cuisine.toLowerCase().includes(query.toLowerCase())
-      );
-    } else if (aiSearched) {
-      // AI search was attempted but returned no results - do full text search
-      others = allRestaurants.filter(
-        (r) =>
-          r.name.toLowerCase().includes(query.toLowerCase()) ||
-          r.cuisine.toLowerCase().includes(query.toLowerCase())
-      );
-    } else {
-      // AI search not active, just apply text filter
-      others = allRestaurants.filter(
-        (r) =>
-          r.name.toLowerCase().includes(query.toLowerCase()) ||
-          r.cuisine.toLowerCase().includes(query.toLowerCase())
-      );
+
+      return [...recommended, ...others];
     }
 
-    // Return recommended restaurants first, then filtered others
-    return [...recommended, ...others];
+    // No AI recommendations - apply text filtering to all restaurants
+    return restaurants.filter(matchesTextSearch);
   }, [query, recommendedNames, aiSearched]);
 
   return (
