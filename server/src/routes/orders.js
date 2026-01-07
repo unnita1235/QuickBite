@@ -40,8 +40,7 @@ router.post('/', authMiddleware, [
     console.error('Error creating order:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to create order',
-      error: error.message
+      message: 'Failed to create order'
     });
   }
 });
@@ -70,8 +69,7 @@ router.get('/', authMiddleware, async (req, res) => {
     console.error('Error fetching orders:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch orders',
-      error: error.message
+      message: 'Failed to fetch orders'
     });
   }
 });
@@ -107,8 +105,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
     console.error('Error fetching order:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch order',
-      error: error.message
+      message: 'Failed to fetch order'
     });
   }
 });
@@ -160,8 +157,7 @@ router.patch('/:id', authMiddleware, [
     console.error('Error updating order:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update order',
-      error: error.message
+      message: 'Failed to update order'
     });
   }
 });
