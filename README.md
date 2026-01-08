@@ -43,15 +43,15 @@ This project leverages a decoupled **Client-Server** architecture to ensure scal
 ```mermaid
 graph LR
     subgraph Client
-        Browser[Browsers]
-        Mobile[Mobile Devices]
+        Browser["Browsers"]
+        Mobile["Mobile Devices"]
     end
     
     subgraph Cloud
-        Frontend[Next.js App\n(Vercel)]
-        Backend[Express API\n(Render)]
-        DB[(PostgreSQL\nNeon)]
-        AI[Genkit AI\n(Google)]
+        Frontend["Next.js App\n(Vercel)"]
+        Backend["Express API\n(Render)"]
+        DB[("PostgreSQL\n(Neon)")]
+        AI["Genkit AI\n(Google)"]
     end
 
     Browser -->|HTTPS| Frontend
