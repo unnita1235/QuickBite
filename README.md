@@ -16,8 +16,8 @@
 
   <br />
 
-  <img src="screenshots/home.png" alt="Home" width="45%" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-right: 10px;" />
-  <img src="screenshots/login.png" alt="Login" width="45%" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);" />
+  <img src="screenshots/live_home.png" alt="Home" width="45%" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-right: 10px;" />
+  <img src="screenshots/live_register.png" alt="Register" width="45%" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);" />
 
 </div>
 
