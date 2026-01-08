@@ -1,8 +1,18 @@
 # QuickBite 🍕
 
-A full-stack food delivery application with AI-powered restaurant recommendations using Google Genkit.
+A full-stack food delivery application designed to bridge the gap between hungry users and local culinary gems. Built with **Next.js 15** and **Node.js**, QuickBite combines lightning-fast performance with a premium user experience.
 
-**Live Demo:** [https://quick-bite-mu.vercel.app](https://quick-bite-mu.vercel.app)  
+> **Note:** This project currently uses a robust text-based search engine backed by PostgreSQL, with architecture pre-configured for **Google Genkit (Gemini 2.0 Flash)** integration to enable future natural-language discovery.
+
+## About The Project
+
+QuickBite is more than just a clone; it is a production-ready template for modern e-commerce. It solves the challenge of efficient food discovery and order management through a decoupled client-server architecture.
+
+**Key capabilities include:**
+*   **Seamless Ordering**: From browsing menus to checkout, the flow is optimized for conversion.
+*   **Secure Infrastructure**: Industry-standard JWT authentication and password hashing.
+*   **AI Foundation**: The codebase includes the `genkit` SDK setup, ready to transform search queries like *"healthy lunch under $15"* into structured database queries.
+*   **Real-world Deployment**: Fully configured for Vercel (Frontend) and Render (Backend) with environment-based configuration.**Live Demo:** [https://quick-bite-mu.vercel.app](https://quick-bite-mu.vercel.app)  
 **Backend API:** [https://quickbite-backend-zsdz.onrender.com](https://quickbite-backend-zsdz.onrender.com)
 
 ---
