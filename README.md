@@ -11,7 +11,10 @@
 
 ---
 
-![QuickBite Live Preview](screenshots/hero.png)
+<div align="center">
+  <img src="screenshots/home.png" alt="QuickBite Home" width="45%" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+  <img src="screenshots/login.png" alt="QuickBite Login" width="45%" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+</div>
 
 ## 📖 About The Project
 
