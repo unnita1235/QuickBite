@@ -1,241 +1,224 @@
 # QuickBite 🍕
 
-> **AI-Powered Restaurant Discovery Platform**
->
-> A full-stack web application that leverages Google Gemini AI to provide intelligent restaurant recommendations and natural language search capabilities.
+A full-stack food delivery application with AI-powered restaurant recommendations using Google Genkit.
+
+**Live Demo:** [https://quick-bite-mu.vercel.app](https://quick-bite-mu.vercel.app)  
+**Backend API:** [https://quickbite-backend-zsdz.onrender.com](https://quickbite-backend-zsdz.onrender.com)
 
 ---
 
-## ✨ Overview
+## Features
 
-QuickBite is a modern, responsive restaurant discovery platform designed to help users find their next favorite dining experience. With AI-powered search and intelligent recommendations, QuickBite makes discovering restaurants effortless and enjoyable.
-
-**Live Application:** [https://quick-bite-mu.vercel.app](https://quick-bite-mu.vercel.app)  
-**Backend API:** [https://quickbite-backend-zsdr.onrender.com/api](https://quickbite-backend-zsdr.onrender.com/api)
-
----
-
-## 🚀 Key Features
-
-✅ **AI-Powered Search** - Natural language restaurant search with Google Gemini integration  
-✅ **Real-time Ratings** - Live restaurant ratings and delivery time estimates  
-✅ **Responsive Design** - Mobile-first responsive interface for all devices  
-✅ **Restaurant Browsing** - Elegant card-based restaurant discovery interface  
-✅ **JWT Authentication** - Secure user authentication and authorization  
-✅ **Production Ready** - Fully deployed and optimized for production environments
+- **AI-Powered Search** — Natural language restaurant search using Google Genkit AI
+- **Restaurant Discovery** — Browse restaurants with ratings, cuisine types, and delivery times
+- **Shopping Cart** — Add menu items, adjust quantities, and view order totals
+- **User Authentication** — JWT-based registration and login
+- **Order Management** — Place and track food orders
+- **Responsive Design** — Mobile-first UI with Tailwind CSS
 
 ---
 
-## 🛠️ Technology Stack
+## Tech Stack
 
 ### Frontend
-- **Framework:** Next.js 15 + TypeScript
-- **Styling:** Tailwind CSS
-- **UI Components:** Shadcn/ui
-- **State Management:** React Hooks
-- **API Client:** Axios
-- **Deployment:** Vercel
+| Technology | Purpose |
+|------------|---------|
+| Next.js 15 | React framework with App Router |
+| TypeScript | Type safety |
+| Tailwind CSS | Styling |
+| Radix UI | Accessible component primitives |
+| Google Genkit | AI recommendations |
 
 ### Backend
-- **Runtime:** Node.js
-- **Framework:** Express.js
-- **Language:** TypeScript
-- **Database:** PostgreSQL
-- **ORM:** Prisma
-- **Authentication:** JWT
-- **API Documentation:** OpenAPI/Swagger
-- **Deployment:** Render
-
-### AI & APIs
-- **AI Integration:** Google Gemini API
-- **API Testing:** Postman Collections Included
+| Technology | Purpose |
+|------------|---------|
+| Node.js + Express | REST API server |
+| PostgreSQL | Database |
+| bcrypt | Password hashing |
+| JWT | Authentication tokens |
+| express-rate-limit | Rate limiting |
 
 ---
 
-## 📋 Prerequisites
+## Project Structure
 
-Before getting started, ensure you have:
-
-- **Node.js** 18+ installed
-- **npm** or **yarn** package manager
-- **PostgreSQL** database
-- **Google Gemini API** key
-- Code editor (VS Code recommended)
+```
+QuickBite/
+├── src/
+│   ├── app/                  # Next.js pages (App Router)
+│   │   ├── checkout/         # Checkout flow
+│   │   ├── dashboard/        # User dashboard
+│   │   ├── login/            # Login page
+│   │   ├── orders/           # Order history
+│   │   ├── register/         # Registration page
+│   │   └── restaurants/      # Restaurant details
+│   ├── ai/                   # Genkit AI flows
+│   ├── components/           # React components
+│   │   ├── ui/               # Shadcn/ui components
+│   │   └── __tests__/        # Component tests
+│   ├── context/              # React context providers
+│   ├── hooks/                # Custom React hooks
+│   └── lib/                  # Utilities and data
+├── server/
+│   ├── src/
+│   │   ├── index.js          # Express server entry
+│   │   └── routes/           # API route handlers
+│   └── migrations/           # Database migrations
+└── docs/                     # Additional documentation
+```
 
 ---
 
-## ⚙️ Installation & Setup
+## Getting Started
 
-### 1. Clone Repository
+### Prerequisites
+
+- Node.js 18+
+- PostgreSQL database
+- Google AI API key (for Genkit)
+
+### 1. Clone the Repository
+
 ```bash
 git clone https://github.com/unnita1235/QuickBite.git
 cd QuickBite
 ```
 
 ### 2. Install Dependencies
+
 ```bash
+# Frontend
 npm install
+
+# Backend
+cd server && npm install
 ```
 
-### 3. Environment Configuration
-```bash
-cp .env.example .env.local
-```
+### 3. Configure Environment Variables
 
-Update `.env.local` with:
+Create `.env.local` in the root directory:
+
 ```env
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/quickbite
+# AI Search
+GOOGLE_GENAI_API_KEY=your_google_ai_api_key
 
-# Frontend API
-NEXT_PUBLIC_API_URL=http://localhost:5000/api
-
-# Google Gemini API
-GOOGLE_GENAI_API_KEY=your_gemini_api_key
-
-# JWT Secret
-JWT_SECRET=your_jwt_secret_key
+# Backend API URL
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
 ```
 
-### 4. Database Setup
+Create `.env` in the `server/` directory:
+
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/quickbite
+JWT_SECRET=your_secure_jwt_secret
+FRONTEND_URL=http://localhost:9002
+PORT=3000
+```
+
+### 4. Setup Database
+
+Run the migrations to create tables:
+
 ```bash
-# Run migrations
-cd server && npx prisma migrate dev
+cd server
+# Initialize PostgreSQL tables (users, restaurants, orders, menus)
 ```
 
 ### 5. Start Development Servers
 
-**Terminal 1 - Frontend:**
+**Terminal 1 — Frontend (port 9002):**
 ```bash
 npm run dev
 ```
 
-**Terminal 2 - Backend:**
+**Terminal 2 — Backend (port 3000):**
 ```bash
 cd server && npm run dev
 ```
 
-Access the application at `http://localhost:3000`
+Open [http://localhost:9002](http://localhost:9002)
 
 ---
 
-## 🧪 Testing
+## API Endpoints
 
-### Run Unit Tests
+### Health Check
+```
+GET /api/health
+```
+
+### Authentication
+```
+POST /api/auth/register    # Register new user
+POST /api/auth/login       # Login and get JWT token
+```
+
+### Restaurants
+```
+GET  /api/restaurants      # List all restaurants (paginated)
+GET  /api/restaurants/:id  # Get restaurant details with menu
+POST /api/restaurants      # Create restaurant (auth required)
+```
+
+### Orders
+```
+GET  /api/orders           # Get user's orders (auth required)
+GET  /api/orders/:id       # Get order details (auth required)
+POST /api/orders           # Create new order (auth required)
+```
+
+### User Profile
+```
+GET  /api/users/profile    # Get current user profile (auth required)
+PUT  /api/users/profile    # Update user profile (auth required)
+```
+
+---
+
+## Testing
+
+Run the component test suite:
+
 ```bash
-npm run test
-```
-
-### Run Integration Tests
-```bash
-npm run test:integration
-```
-
-### Run E2E Tests with Playwright
-```bash
-npm run test:e2e
-```
-
-### Code Coverage
-```bash
-npm run test:coverage
+npm run test           # Run tests
+npm run test:ui        # Run tests with UI
+npm run test:coverage  # Run tests with coverage report
 ```
 
 ---
 
-## 📦 Build & Deployment
+## Scripts
 
-### Build for Production
-```bash
-npm run build
-```
-
-### Verify Build
-```bash
-npm run lint
-npm run type-check
-```
-
-### Production Deployment
-
-The application is configured for:
-- **Frontend:** Vercel (automatic deployments from main branch)
-- **Backend:** Render (automatic deployments from main branch)
-- **Database:** PostgreSQL (Neon)
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start Next.js dev server (port 9002) |
+| `npm run build` | Build for production |
+| `npm run lint` | Run ESLint |
+| `npm run typecheck` | Run TypeScript type checking |
+| `npm run test` | Run Vitest tests |
+| `npm run ci` | Run full CI pipeline (lint + typecheck + test + build) |
 
 ---
 
-## 📁 Project Structure
+## Deployment
 
+### Frontend (Vercel)
+The frontend is deployed on Vercel with automatic deployments from the main branch.
+
+### Backend (Render)
+The backend is deployed on Render. Configuration is in `server/Procfile`:
 ```
-QuickBite/
-├── src/                      # Frontend source code
-│   ├── app/                  # Next.js app router
-│   ├── components/           # React components
-│   ├── lib/                  # Utilities and helpers
-│   └── types/                # TypeScript type definitions
-├── server/                   # Backend source code
-│   ├── middleware/           # Express middleware
-│   ├── routes/               # API routes
-│   ├── controllers/          # Route controllers
-│   ├── models/               # Database models (Prisma)
-│   └── config/               # Configuration files
-├── public/                   # Static assets
-└── docs/                     # Documentation
+web: npm start
 ```
 
 ---
 
-## 🔒 Security Features
+## License
 
-- ✅ JWT Token-based Authentication
-- ✅ Password Hashing with bcrypt
-- ✅ CORS Protection
-- ✅ Rate Limiting on API Endpoints
-- ✅ SQL Injection Prevention (Prisma ORM)
-- ✅ XSS Protection
-- ✅ Environment Variable Security
+MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-## 📊 Performance Metrics
+## Author
 
-- **Lighthouse Score:** 90+
-- **Core Web Vitals:** All Green
-- **Bundle Size:** < 250KB (gzipped)
-- **API Response Time:** < 200ms average
-- **Database Queries:** Optimized with indexes
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 👨‍💻 Author
-
-**Unnita** - Full-Stack Developer
-
-- GitHub: [@unnita1235](https://github.com/unnita1235)
-- Portfolio: [Quick-Bite Live](https://quick-bite-mu.vercel.app)
-
----
-
-## 🙏 Acknowledgments
-
-- Google Gemini API for AI capabilities
-- Next.js and Vercel for excellent deployment platform
-- Render for reliable backend hosting
-- Open source community for amazing tools and libraries
-
----
-
-**Made with ❤️ by Unnita**
+**Unnita** — [@unnita1235](https://github.com/unnita1235)
