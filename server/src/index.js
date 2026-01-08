@@ -111,8 +111,8 @@ app.post('/api/auth/register', async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await pool.query(
-      'INSERT INTO users (name, email, password_hash, role, created_at) VALUES ($1, $2, $3, $4, NOW()) RETURNING id, email, name',
-      [name, email, hashedPassword, 'user']
+      'INSERT INTO users (first_name, email, password_hash, created_at) VALUES ($1, $2, $3, NOW()) RETURNING id, email, first_name AS name',
+      [name, email, hashedPassword]
     );
 
     res.status(201).json({
@@ -134,7 +134,7 @@ app.post('/api/auth/login', async (req, res) => {
 
   try {
     const result = await pool.query(
-      'SELECT id, email, name, password_hash FROM users WHERE email = $1',
+      'SELECT id, email, first_name AS name, password_hash FROM users WHERE email = $1',
       [email]
     );
 
