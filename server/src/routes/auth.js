@@ -90,10 +90,13 @@ router.post(
       });
     } catch (error) {
       console.error('Registration error:', error);
+      console.error('Error stack:', error.stack);
+      console.error('Error code:', error.code);
       res.status(500).json({
         success: false,
         error: 'Registration failed',
         code: 'REGISTRATION_FAILED',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
       });
     }
   }
