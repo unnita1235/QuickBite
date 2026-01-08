@@ -2,6 +2,7 @@
 -- Initial database schema setup
 
 -- Drop existing tables if they exist (for fresh migration)
+DROP TABLE IF EXISTS menus CASCADE;
 DROP TABLE IF EXISTS orders CASCADE;
 DROP TABLE IF EXISTS restaurants CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
@@ -41,6 +42,19 @@ CREATE TABLE restaurants (
 
 -- Create index for active restaurants
 CREATE INDEX idx_restaurants_active ON restaurants(is_active);
+
+-- Create menus table
+CREATE TABLE menus (
+  id SERIAL PRIMARY KEY,
+  restaurant_id INT NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  items JSONB,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create index for menus
+CREATE INDEX idx_menus_restaurant_id ON menus(restaurant_id);
 
 -- Create orders table
 CREATE TABLE orders (

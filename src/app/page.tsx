@@ -4,87 +4,78 @@ import { useState, useEffect, useMemo } from 'react';
 import { restaurants, type Restaurant } from '@/lib/data';
 import RestaurantCard from '@/components/RestaurantCard';
 import SearchBar from '@/components/SearchBar';
-import { getRecommendedRestaurants } from '@/actions/recommend';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
 export default function Home() {
   const [query, setQuery] = useState('');
-  const [recommendedNames, setRecommendedNames] = useState<string[]>([]);
+  const [searchResults, setSearchResults] = useState<Restaurant[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [aiSearched, setAiSearched] = useState(false);
-  const [aiError, setAiError] = useState(false);
+  const [searchError, setSearchError] = useState(false);
 
   useEffect(() => {
     if (query.length > 2) {
       setIsSearching(true);
-      setAiSearched(true);
-      setAiError(false);
+      setSearchError(false);
+
       const handleSearch = async () => {
         try {
-          const recommendations = await getRecommendedRestaurants(query);
-          setRecommendedNames(recommendations);
-          setAiError(false);
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+          const response = await fetch(`${apiUrl}/search`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query })
+          });
+
+          if (!response.ok) {
+            throw new Error('Search failed');
+          }
+
+          const data = await response.json();
+
+          // Map backend response to frontend Restaurant interface
+          const mappedResults = data.results.map((r: any) => ({
+            id: r.id.toString(),
+            name: r.name,
+            description: r.description,
+            cuisine: r.cuisine_type || r.cuisine || 'Other',
+            rating: parseFloat(r.rating),
+            deliveryTime: r.delivery_time || 30,
+            image: r.image_url || 'https://picsum.photos/seed/101/600/400',
+            imageHint: r.name,
+            menu: []
+          }));
+
+          setSearchResults(mappedResults);
+          setSearchError(false);
         } catch (error) {
-          console.error('Failed to get AI recommendations:', error);
-          setAiError(true);
-          setRecommendedNames([]);
+          console.error('Failed to search:', error);
+          setSearchError(true);
+          setSearchResults([]);
         } finally {
           setIsSearching(false);
         }
       };
+
       handleSearch();
     } else {
-      setRecommendedNames([]);
-      setAiSearched(false);
-      setAiError(false);
+      setSearchResults([]);
+      setSearchError(false);
     }
   }, [query]);
 
-  /**
-   * Filters and sorts restaurants based on search query and AI recommendations.
-   * - If no query: returns all restaurants
-   * - If AI recommendations exist: separates recommended restaurants (shown first) from others
-   * - Applies text-based filtering on restaurant names and cuisines
-   * - Returns recommended restaurants first, followed by filtered others
-   */
-  const filteredRestaurants = useMemo(() => {
-    // Helper function to check if restaurant matches text query
-    const matchesTextSearch = (restaurant: Restaurant): boolean => {
-      const lowerQuery = query.toLowerCase();
-      return (
-        restaurant.name.toLowerCase().includes(lowerQuery) ||
-        restaurant.cuisine.toLowerCase().includes(lowerQuery)
-      );
-    };
-
-    // No search active - return all restaurants
-    if (query.length === 0 && !aiSearched) {
-      return restaurants;
+  const displayedRestaurants = useMemo(() => {
+    if (query.length > 2 && searchResults.length > 0) {
+      return searchResults;
     }
-
-    // If AI provided recommendations, separate them from others
-    if (recommendedNames.length > 0) {
-      const recommendedSet = new Set(recommendedNames);
-      const recommended: Restaurant[] = [];
-      const others: Restaurant[] = [];
-
-      restaurants.forEach(restaurant => {
-        if (recommendedSet.has(restaurant.name)) {
-          recommended.push(restaurant);
-        } else if (matchesTextSearch(restaurant)) {
-          // Only include non-recommended if they match text search
-          others.push(restaurant);
-        }
-      });
-
-      return [...recommended, ...others];
+    // If search active but no results (and no error), handled by length check below
+    if (query.length > 2 && searchResults.length === 0 && !isSearching && !searchError) {
+      return [];
     }
-
-    // No AI recommendations - apply text filtering to all restaurants
-    return restaurants.filter(matchesTextSearch);
-  }, [query, recommendedNames, aiSearched]);
+    // Default show all (static data for now)
+    return restaurants;
+  }, [query, searchResults, isSearching, searchError]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -101,26 +92,30 @@ export default function Home() {
         <SearchBar onSearch={setQuery} isSearching={isSearching} />
       </div>
 
-      {aiError && (
+      {searchError && (
         <Alert variant="destructive" className="mb-6">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>AI Search Unavailable</AlertTitle>
+          <AlertTitle>Search Unavailable</AlertTitle>
           <AlertDescription>
-           We could not connect to our AI recommendation service. Showing text-based search results instead.          </AlertDescription>
+            We could not connect to our search service. Please try again later.
+          </AlertDescription>
         </Alert>
       )}
-      
-      {aiSearched && recommendedNames.length > 0 && !aiError && (
+
+      {query.length > 2 && !searchError && (
         <h2 className="font-headline text-3xl font-semibold tracking-tight mb-6">
-           AI Recommendations for \"{query}\"        </h2>
+          Results for "{query}"
+        </h2>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredRestaurants.map((restaurant) => (
+        {displayedRestaurants.map((restaurant) => (
           <RestaurantCard
             key={restaurant.id}
             restaurant={restaurant}
-            isRecommended={recommendedNames.includes(restaurant.name)}
+            // Logic for 'isRecommended' was based on AI returns names.
+            // Here we can just highlight all results as valid matches.
+            isRecommended={false}
           />
         ))}
       </div>
@@ -139,7 +134,7 @@ export default function Home() {
         </div>
       )}
 
-      {filteredRestaurants.length === 0 && !isSearching && (
+      {displayedRestaurants.length === 0 && !isSearching && query.length > 2 && (
         <div className="text-center col-span-full py-12">
           <p className="text-muted-foreground text-lg">No restaurants found matching your search.</p>
         </div>

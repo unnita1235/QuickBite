@@ -25,9 +25,9 @@ const limiter = rateLimit({
 
 app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
-app.use(cors({ 
-   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true 
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true
 }));
 
 // ===== ENVIRONMENT VALIDATION =====
@@ -53,22 +53,22 @@ pool.on('error', (err) => console.error('❌ Unexpected error on idle client', e
 // ===== JWT MIDDLEWARE =====
 const verifyToken = (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1];
-  
+
   if (!token) {
-    return res.status(401).json({ 
+    return res.status(401).json({
       success: false,
-      error: 'No token provided' 
+      error: 'No token provided'
     });
   }
-  
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = decoded.userId;
     next();
   } catch (err) {
-    return res.status(401).json({ 
+    return res.status(401).json({
       success: false,
-      error: 'Invalid or expired token' 
+      error: 'Invalid or expired token'
     });
   }
 };
@@ -77,17 +77,17 @@ const verifyToken = (req, res, next) => {
 const handleError = (res, error, status = 500) => {
   console.error('Error:', error);
   const message = error.code === '23505' ? 'Email already registered' : 'Database error';
-  res.status(status).json({ 
+  res.status(status).json({
     success: false,
-    error: message 
+    error: message
   });
 };
 
 // ===== HEALTH CHECK =====
 app.get('/api/health', (req, res) => {
-  res.json({ 
+  res.json({
     success: true,
-    status: 'OK', 
+    status: 'OK',
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
@@ -96,7 +96,7 @@ app.get('/api/health', (req, res) => {
 // ===== AUTHENTICATION ENDPOINTS =====
 app.post('/api/auth/register', async (req, res) => {
   const { email, password, name } = req.body;
-  
+
   // Validation
   if (!validateEmail(email)) {
     return res.status(400).json({ success: false, error: 'Invalid email format' });
@@ -114,8 +114,8 @@ app.post('/api/auth/register', async (req, res) => {
       'INSERT INTO users (name, email, password_hash, role, created_at) VALUES ($1, $2, $3, $4, NOW()) RETURNING id, email, name',
       [name, email, hashedPassword, 'user']
     );
-    
-    res.status(201).json({ 
+
+    res.status(201).json({
       success: true,
       message: 'User registered successfully',
       user: result.rows[0]
@@ -127,7 +127,7 @@ app.post('/api/auth/register', async (req, res) => {
 
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
-  
+
   if (!validateEmail(email) || !password) {
     return res.status(400).json({ success: false, error: 'Invalid credentials' });
   }
@@ -137,31 +137,31 @@ app.post('/api/auth/login', async (req, res) => {
       'SELECT id, email, name, password_hash FROM users WHERE email = $1',
       [email]
     );
-    
+
     if (result.rows.length === 0) {
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
-    
+
     const user = result.rows[0];
     const validPassword = await bcrypt.compare(password, user.password_hash);
-    
+
     if (!validPassword) {
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
-    
+
     const token = jwt.sign(
-      { userId: user.id }, 
-      process.env.JWT_SECRET, 
+      { userId: user.id },
+      process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
-    
-    res.json({ 
+
+    res.json({
       success: true,
       token,
-      user: { 
-        id: user.id, 
-        email: user.email, 
-        name: user.name 
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name
       }
     });
   } catch (error) {
@@ -174,15 +174,15 @@ app.get('/api/restaurants', async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 20, 100);
     const offset = (parseInt(req.query.page) || 0) * limit;
-    
+
     const result = await pool.query(
       'SELECT id, name, description, cuisine_type, rating, delivery_time, address, created_at FROM restaurants ORDER BY rating DESC LIMIT $1 OFFSET $2',
       [limit, offset]
     );
-    
+
     const countResult = await pool.query('SELECT COUNT(*) FROM restaurants');
-    
-    res.json({ 
+
+    res.json({
       success: true,
       data: result.rows,
       pagination: {
@@ -202,21 +202,21 @@ app.get('/api/restaurants/:id', async (req, res) => {
       'SELECT * FROM restaurants WHERE id = $1',
       [req.params.id]
     );
-    
+
     if (restaurantResult.rows.length === 0) {
       return res.status(404).json({ success: false, error: 'Restaurant not found' });
     }
-    
+
     const menuResult = await pool.query(
       'SELECT * FROM menus WHERE restaurant_id = $1',
       [req.params.id]
     );
-    
-    res.json({ 
+
+    res.json({
       success: true,
       data: {
-        ...restaurantResult.rows[0], 
-        menus: menuResult.rows 
+        ...restaurantResult.rows[0],
+        menus: menuResult.rows
       }
     });
   } catch (error) {
@@ -226,7 +226,7 @@ app.get('/api/restaurants/:id', async (req, res) => {
 
 app.post('/api/restaurants', verifyToken, async (req, res) => {
   const { name, description, cuisine_type, rating, delivery_time, address } = req.body;
-  
+
   if (!name || !description) {
     return res.status(400).json({ success: false, error: 'Name and description required' });
   }
@@ -236,8 +236,8 @@ app.post('/api/restaurants', verifyToken, async (req, res) => {
       'INSERT INTO restaurants (name, description, cuisine_type, rating, delivery_time, address, created_at) VALUES ($1, $2, $3, $4, $5, $6, NOW()) RETURNING *',
       [name, description, cuisine_type || 'Other', rating || 4.0, delivery_time || 30, address]
     );
-    
-    res.status(201).json({ 
+
+    res.status(201).json({
       success: true,
       data: result.rows[0]
     });
@@ -250,7 +250,7 @@ app.post('/api/restaurants', verifyToken, async (req, res) => {
 app.post('/api/orders', verifyToken, async (req, res) => {
   const { restaurantId, items, totalAmount } = req.body;
   const userId = req.userId;
-  
+
   if (!restaurantId || !items || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ success: false, error: 'Invalid order data' });
   }
@@ -263,8 +263,8 @@ app.post('/api/orders', verifyToken, async (req, res) => {
       'INSERT INTO orders (user_id, restaurant_id, items, total_amount, status, created_at) VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING *',
       [userId, restaurantId, JSON.stringify(items), totalAmount, 'pending']
     );
-    
-    res.status(201).json({ 
+
+    res.status(201).json({
       success: true,
       data: result.rows[0]
     });
@@ -279,10 +279,10 @@ app.get('/api/orders', verifyToken, async (req, res) => {
       'SELECT * FROM orders WHERE user_id = $1 ORDER BY created_at DESC',
       [req.userId]
     );
-    
-    res.json({ 
+
+    res.json({
       success: true,
-      data: result.rows 
+      data: result.rows
     });
   } catch (error) {
     handleError(res, error);
@@ -295,12 +295,12 @@ app.get('/api/orders/:id', verifyToken, async (req, res) => {
       'SELECT * FROM orders WHERE id = $1 AND user_id = $2',
       [req.params.id, req.userId]
     );
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ success: false, error: 'Order not found' });
     }
-    
-    res.json({ 
+
+    res.json({
       success: true,
       data: result.rows[0]
     });
@@ -316,12 +316,12 @@ app.get('/api/users/profile', verifyToken, async (req, res) => {
       'SELECT id, email, name, created_at FROM users WHERE id = $1',
       [req.userId]
     );
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
-    
-    res.json({ 
+
+    res.json({
       success: true,
       data: result.rows[0]
     });
@@ -332,7 +332,7 @@ app.get('/api/users/profile', verifyToken, async (req, res) => {
 
 app.put('/api/users/profile', verifyToken, async (req, res) => {
   const { name, email } = req.body;
-  
+
   if (name && !validateName(name)) {
     return res.status(400).json({ success: false, error: 'Invalid name' });
   }
@@ -345,8 +345,8 @@ app.put('/api/users/profile', verifyToken, async (req, res) => {
       'UPDATE users SET name = COALESCE($1, name), email = COALESCE($2, email) WHERE id = $3 RETURNING id, email, name',
       [name || null, email || null, req.userId]
     );
-    
-    res.json({ 
+
+    res.json({
       success: true,
       data: result.rows[0]
     });
@@ -357,17 +357,45 @@ app.put('/api/users/profile', verifyToken, async (req, res) => {
 
 // Root endpoint
 app.get('/', (req, res) => res.status(200).json({ success: true, message: 'QuickBite Food Delivery API v1.0.0', endpoints: { health: '/api/health', auth: '/api/auth', restaurants: '/api/restaurants', orders: '/api/orders', users: '/api/users' }, documentation: 'See API_DOCUMENTATION.md for full API details' }));
+// ===== SEARCH ENDPOINT =====
+app.post('/api/search', async (req, res) => {
+  const { query } = req.body;
+
+  if (!query || query.trim().length === 0) {
+    return res.status(400).json({
+      success: false,
+      error: 'Search query required'
+    });
+  }
+
+  try {
+    // For now, return all restaurants with basic filtering
+    // Later integrate with Gemini API here
+    const result = await pool.query(
+      'SELECT * FROM restaurants WHERE name ILIKE $1 OR description ILIKE $1 ORDER BY rating DESC LIMIT 10',
+      [`%${query}%`]
+    );
+
+    res.json({
+      success: true,
+      results: result.rows
+    });
+  } catch (error) {
+    handleError(res, error);
+  }
+});
+
 // ===== ERROR HANDLERS =====
 app.use((req, res) => {
-  res.status(404).json({ 
+  res.status(404).json({
     success: false,
-    error: 'Endpoint not found' 
+    error: 'Endpoint not found'
   });
 });
 
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
-  res.status(err.status || 500).json({ 
+  res.status(err.status || 500).json({
     success: false,
     error: 'Internal server error'
   });
