@@ -1,45 +1,79 @@
 'use client';
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'https://quickbite-backend-zsdz.onrender.com';
+import { User, Restaurant, Order, CreateOrderPayload } from '@/types';
 
-interface Restaurant {
-  id: number;
-  name: string;
-  description: string;
-  cuisine_type: string;
-  rating: number;
-  delivery_time: number;
-  address: string;
-  created_at: string;
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+
+export class ApiError extends Error {
+  constructor(public status: number, message: string) {
+    super(message);
+    this.name = 'ApiError';
+  }
 }
 
-interface MenuItem {
-  id: number;
-  restaurant_id: number;
-  name: string;
-  description: string;
-  price: number;
-  created_at: string;
+async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+  
+  const response = await fetch(`${API_BASE}${endpoint}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
+      ...options?.headers,
+    },
+  });
+
+  const data = await response.json();
+  
+  if (!response.ok) {
+    throw new ApiError(response.status, data.error || 'Request failed');
+  }
+  
+  return data;
 }
 
+export const api = {
+  // Auth
+  login: (email: string, password: string) => 
+    fetchApi<{token: string; user: User}>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    }),
+  
+  register: (email: string, password: string, name: string) =>
+    fetchApi<{token: string; user: User}>('/auth/register', {
+      method: 'POST', 
+      body: JSON.stringify({ email, password, name }),
+    }),
+
+  // Restaurants
+  getRestaurants: () => fetchApi<{data: Restaurant[]}>('/restaurants'),
+  getRestaurant: (id: string) => fetchApi<{data: Restaurant}>(`/restaurants/${id}`),
+
+  // Orders
+  createOrder: (order: CreateOrderPayload) =>
+    fetchApi<{data: Order}>('/orders', {
+      method: 'POST',
+      body: JSON.stringify(order),
+    }),
+  
+  getOrders: () => fetchApi<{data: Order[]}>('/orders'),
+  getOrder: (id: string) => fetchApi<{data: Order}>(`/orders/${id}`),
+
+  // User
+  getProfile: () => fetchApi<{data: User}>('/users/profile'),
+  updateProfile: (data: Partial<User>) =>
+    fetchApi<{data: User}>('/users/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+};
+
+// Legacy functions for backward compatibility
 export async function fetchRestaurants(): Promise<Restaurant[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/restaurants`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      next: { revalidate: 60 }, // Revalidate every 60 seconds
-    });
-
-    if (!response.ok) {
-      console.error('Failed to fetch restaurants:', response.statusText);
-      return [];
-    }
-
-    const data = await response.json();
-    return data.data || [];
+    const response = await api.getRestaurants();
+    return response.data || [];
   } catch (error) {
     console.error('API error fetching restaurants:', error);
     return [];
@@ -48,75 +82,17 @@ export async function fetchRestaurants(): Promise<Restaurant[]> {
 
 export async function fetchRestaurantById(id: string): Promise<Restaurant | null> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/restaurants/${id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      next: { revalidate: 60 },
-    });
-
-    if (!response.ok) {
-      console.error('Failed to fetch restaurant:', response.statusText);
-      return null;
-    }
-
-    const data = await response.json();
-    return data.data || null;
+    const response = await api.getRestaurant(id);
+    return response.data || null;
   } catch (error) {
     console.error('API error fetching restaurant:', error);
     return null;
   }
 }
 
-export async function fetchMenuItems(restaurantId: string): Promise<MenuItem[]> {
-  try {
-    const restaurant = await fetchRestaurantById(restaurantId);
-    if (restaurant && 'menus' in restaurant) {
-      return (restaurant as any).menus || [];
-    }
-    return [];
-  } catch (error) {
-    console.error('API error fetching menu items:', error);
-    return [];
-  }
-}
-
-export async function createOrder(
-  restaurantId: number,
-  items: any[],
-  totalAmount: number,
-  token: string
-): Promise<any> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/orders`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        restaurantId,
-        items,
-        totalAmount,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to create order: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data.data;
-  } catch (error) {
-    console.error('API error creating order:', error);
-    throw error;
-  }
-}
-
 export async function getHealthStatus(): Promise<boolean> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/health`, {
+    const response = await fetch(`${API_BASE}/health`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

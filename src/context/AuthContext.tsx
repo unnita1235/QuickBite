@@ -2,20 +2,16 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-}
+import { api, ApiError } from '@/lib/api';
+import { User } from '@/types';
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<{success: boolean}>;
-  register: (email: string, password: string, name: string) => Promise<{success: boolean}>;
+  login: (email: string, password: string) => Promise<{success: boolean; error?: string}>;
+  register: (email: string, password: string, name: string) => Promise<{success: boolean; error?: string}>;
   logout: () => void;
 }
 
@@ -42,49 +38,36 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        }
-      );
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Login failed');
-
-      setToken(data.token);
-      setUser(data.user);
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      const response = await api.login(email, password);
+      setToken(response.token);
+      setUser(response.user);
+      localStorage.setItem('authToken', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
       router.push('/dashboard');
-          return { success: true };
+      return { success: true };
     } catch (error) {
       console.error('Login error:', error);
-return { success: false };    }
+      const message = error instanceof ApiError ? error.message : 'Login failed';
+      return { success: false, error: message };
+    }
   };
 
   const register = async (email: string, password: string, name: string) => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, name }),
-        }
-      );
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Registration failed');
-
+      const response = await api.register(email, password, name);
+      
       // Auto-login after registration
-      await login(email, password);
-          return { success: true };
+      setToken(response.token);
+      setUser(response.user);
+      localStorage.setItem('authToken', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+      router.push('/dashboard');
+      return { success: true };
     } catch (error) {
       console.error('Registration error:', error);
-return { success: false };    }
+      const message = error instanceof ApiError ? error.message : 'Registration failed';
+      return { success: false, error: message };
+    }
   };
 
   const logout = () => {
