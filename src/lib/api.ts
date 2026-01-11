@@ -23,7 +23,13 @@ async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> 
     },
   });
 
-  const data = await response.json();
+  let data;
+  try {
+    data = await response.json();
+  } catch (error) {
+    // If response is not JSON, throw an error
+    throw new ApiError(response.status, 'Invalid response format');
+  }
   
   if (!response.ok) {
     throw new ApiError(response.status, data.error || 'Request failed');
