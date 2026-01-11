@@ -34,11 +34,12 @@ function ConfirmationContent() {
   // Calculate delivery time based on restaurants in cart or order
   const deliveryTime = useMemo(() => {
     if (order) {
-      // If we have order data, try to get restaurant delivery time
-      // Convert API restaurant_id (number) to match static data id (string)
+      // If we have order data, try to get restaurant delivery time from static data
+      // Note: This uses static data as a fallback. Ideally, delivery_time would be
+      // included in the Order API response to avoid this dependency.
       const restaurantIdStr = String(order.restaurant_id);
       const restaurant = restaurants.find(r => r.id === restaurantIdStr);
-      return restaurant?.deliveryTime || 30;
+      return restaurant?.deliveryTime || 30; // Default to 30 minutes if not found
     }
     
     if (cartItems.length === 0) return 0;

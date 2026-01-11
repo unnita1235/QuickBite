@@ -2,7 +2,7 @@
 
 import { User, Restaurant, Order, CreateOrderPayload } from '@/types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://quickbite-backend-zsdz.onrender.com/api';
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {

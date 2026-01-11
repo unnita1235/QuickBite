@@ -23,6 +23,8 @@ export function DeliveryAddressForm({ address, setAddress, notes, setNotes }: De
           value={address}
           onChange={(e) => setAddress(e.target.value)}
           required
+          aria-required="true"
+          aria-label="Delivery address"
           className="mt-1"
         />
       </div>
@@ -34,6 +36,7 @@ export function DeliveryAddressForm({ address, setAddress, notes, setNotes }: De
           placeholder="e.g., Ring doorbell, leave at door"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
+          aria-label="Delivery notes"
           className="mt-1"
         />
       </div>
