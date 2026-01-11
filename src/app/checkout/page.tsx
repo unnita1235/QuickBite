@@ -8,11 +8,21 @@ import { ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { restaurants } from '@/lib/data';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { api } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
+import { DeliveryAddressForm } from '@/components/DeliveryAddressForm';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 export default function CheckoutPage() {
-  const { cartItems } = useCart();
+  const { cartItems, clearCart, getTotalPrice } = useCart();
+  const { isAuthenticated } = useAuth();
   const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [address, setAddress] = useState('');
+  const [notes, setNotes] = useState('');
 
   /**
    * Calculates delivery time based on restaurants in the cart.
@@ -55,10 +65,57 @@ export default function CheckoutPage() {
     );
   }
 
-  const handlePlaceOrder = () => {
-    // In a real app, this would submit the order to a backend.
-    // For this demo, we'll just navigate to the confirmation page.
-    router.push('/confirmation');
+  const handlePlaceOrder = async () => {
+    if (!isAuthenticated) {
+      router.push('/login?redirect=/checkout');
+      return;
+    }
+
+    if (!address.trim()) {
+      setError('Please enter a delivery address');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      // Get restaurant ID from first cart item
+      const firstItemId = cartItems[0]?.id;
+      if (!firstItemId || !firstItemId.includes('-')) {
+        setError('Invalid cart item format');
+        return;
+      }
+      
+      const restaurantId = firstItemId.split('-')[0];
+      const restaurantIdNum = parseInt(restaurantId, 10);
+      
+      if (isNaN(restaurantIdNum)) {
+        setError('Invalid restaurant ID');
+        return;
+      }
+      
+      const orderPayload = {
+        restaurantId: restaurantIdNum,
+        items: cartItems.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+        totalAmount: getTotalPrice(),
+        deliveryAddress: address,
+        deliveryNotes: notes || undefined,
+      };
+
+      const response = await api.createOrder(orderPayload);
+      clearCart();
+      router.push(`/confirmation?orderId=${response.data.id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to place order');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -69,12 +126,31 @@ export default function CheckoutPage() {
         </h1>
         <div className="grid grid-cols-1 gap-8">
           <OrderSummary />
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="font-headline text-2xl">Payment & Delivery</CardTitle>
+              <CardTitle className="font-headline text-2xl">Delivery Information</CardTitle>
               <CardDescription>
-                This is a demo application. No payment is required and form validation is intentionally skipped for simplicity.
+                Please provide your delivery address
               </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DeliveryAddressForm 
+                address={address}
+                setAddress={setAddress}
+                notes={notes}
+                setNotes={setNotes}
+              />
+            </CardContent>
+          </Card>
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="font-headline text-2xl">Delivery Time</CardTitle>
             </CardHeader>
             <CardContent>
                 <p>
@@ -86,8 +162,9 @@ export default function CheckoutPage() {
             size="lg"
             className="w-full bg-accent text-accent-foreground hover:bg-accent/90 text-lg py-6"
             onClick={handlePlaceOrder}
+            disabled={isSubmitting || !address.trim()}
           >
-            Place Your Order
+            {isSubmitting ? 'Placing Order...' : 'Place Your Order'}
           </Button>
         </div>
       </div>

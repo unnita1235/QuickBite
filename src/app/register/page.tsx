@@ -74,9 +74,9 @@ export default function RegisterPage() {
 
     if (result.success) {
       setSuccess(true);
-      setTimeout(() => router.push('/dashboard'), 1500);
+      // The AuthContext will handle redirect after successful registration
     } else {
-      setError('Registration failed');
+      setError(result.error || 'Registration failed. Please try again.');
     }
 
     setIsSubmitting(false);

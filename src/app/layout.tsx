@@ -5,6 +5,7 @@ import { CartProvider } from '@/hooks/useCart';
 import Header from '@/components/Header';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AuthProvider } from '@/context/AuthContext';
+import { EnvValidator } from '@/components/EnvValidator';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -63,17 +64,17 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <ErrorBoundary>
-                <AuthProvider>
-          <CartProvider>
-            <div className="relative flex min-h-screen flex-col">
-              <Header />
-              <main className="flex-1">{children}</main>
-            </div>
-            <Toaster />
-
-                        </CartProvider>
-                      </AuthProvider>
-       </ErrorBoundary>
+          <EnvValidator />
+          <AuthProvider>
+            <CartProvider>
+              <div className="relative flex min-h-screen flex-col">
+                <Header />
+                <main className="flex-1">{children}</main>
+              </div>
+              <Toaster />
+            </CartProvider>
+          </AuthProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
