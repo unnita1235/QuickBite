@@ -16,6 +16,7 @@ export function DeliveryAddressForm({ address, setAddress, notes, setNotes }: De
     <div className="space-y-4">
       <div>
         <Label htmlFor="address">Delivery Address *</Label>
+        {/* Using Textarea to allow multi-line address input for better user experience */}
         <Textarea
           id="address"
           placeholder="Enter your full delivery address"
@@ -27,6 +28,7 @@ export function DeliveryAddressForm({ address, setAddress, notes, setNotes }: De
       </div>
       <div>
         <Label htmlFor="notes">Delivery Notes (optional)</Label>
+        {/* Using Input for single-line notes */}
         <Input
           id="notes"
           placeholder="e.g., Ring doorbell, leave at door"

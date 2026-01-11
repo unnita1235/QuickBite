@@ -81,10 +81,22 @@ export default function CheckoutPage() {
 
     try {
       // Get restaurant ID from first cart item
-      const restaurantId = cartItems[0]?.id.split('-')[0];
+      const firstItemId = cartItems[0]?.id;
+      if (!firstItemId || !firstItemId.includes('-')) {
+        setError('Invalid cart item format');
+        return;
+      }
+      
+      const restaurantId = firstItemId.split('-')[0];
+      const restaurantIdNum = parseInt(restaurantId, 10);
+      
+      if (isNaN(restaurantIdNum)) {
+        setError('Invalid restaurant ID');
+        return;
+      }
       
       const orderPayload = {
-        restaurantId: parseInt(restaurantId),
+        restaurantId: restaurantIdNum,
         items: cartItems.map(item => ({
           id: item.id,
           name: item.name,

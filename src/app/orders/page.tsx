@@ -115,8 +115,9 @@ export default function OrdersPage() {
                           <p className="text-sm text-gray-600">Order Date: {new Date(order.created_at).toLocaleDateString()}</p>
                           <p className="text-lg font-bold text-emerald-600">₹{order.total_amount}</p>
                         </div>
-                        <Button variant="outline" onClick={() => router.push(`/orders/${order.id}`)}
-                          className="w-full h-4 text-4">View Details</Button>
+                        <Button variant="outline" onClick={() => router.push(`/orders/${order.id}`)}>
+                          View Details
+                        </Button>
                       </div>
                     </div>
                   </CardContent>

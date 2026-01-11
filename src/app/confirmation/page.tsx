@@ -35,8 +35,9 @@ function ConfirmationContent() {
   const deliveryTime = useMemo(() => {
     if (order) {
       // If we have order data, try to get restaurant delivery time
-      const restaurantId = order.restaurant_id.toString();
-      const restaurant = restaurants.find(r => r.id === restaurantId);
+      // Convert API restaurant_id (number) to match static data id (string)
+      const restaurantIdStr = String(order.restaurant_id);
+      const restaurant = restaurants.find(r => r.id === restaurantIdStr);
       return restaurant?.deliveryTime || 30;
     }
     
