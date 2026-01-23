@@ -1,19 +1,58 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { restaurants, type Restaurant } from '@/lib/data';
+import { restaurants as staticRestaurants, type Restaurant } from '@/lib/data';
 import RestaurantCard from '@/components/RestaurantCard';
 import SearchBar from '@/components/SearchBar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
+function mapApiRestaurant(r: any): Restaurant {
+  return {
+    id: r.id.toString(),
+    name: r.name,
+    description: r.description || '',
+    cuisine: r.cuisine_type || r.cuisine || 'Other',
+    rating: parseFloat(r.rating) || 0,
+    deliveryTime: r.delivery_time || 30,
+    image: r.image_url || 'https://picsum.photos/seed/101/600/400',
+    imageHint: r.name,
+    menu: []
+  };
+}
+
 export default function Home() {
   const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Restaurant[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState(false);
+  const [allRestaurants, setAllRestaurants] = useState<Restaurant[]>([]);
+  const [isLoadingRestaurants, setIsLoadingRestaurants] = useState(true);
 
+  // Fetch all restaurants on initial load
+  useEffect(() => {
+    const fetchRestaurants = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/restaurants`);
+        if (!response.ok) throw new Error('Failed to fetch restaurants');
+        const data = await response.json();
+        const mapped = (data.restaurants || data).map(mapApiRestaurant);
+        setAllRestaurants(mapped);
+      } catch (error) {
+        console.error('Failed to fetch restaurants, using static data:', error);
+        setAllRestaurants(staticRestaurants);
+      } finally {
+        setIsLoadingRestaurants(false);
+      }
+    };
+
+    fetchRestaurants();
+  }, []);
+
+  // Handle search
   useEffect(() => {
     if (query.length > 2) {
       setIsSearching(true);
@@ -21,7 +60,6 @@ export default function Home() {
 
       const handleSearch = async () => {
         try {
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
           const response = await fetch(`${apiUrl}/search`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -33,20 +71,7 @@ export default function Home() {
           }
 
           const data = await response.json();
-
-          // Map backend response to frontend Restaurant interface
-          const mappedResults = data.results.map((r: any) => ({
-            id: r.id.toString(),
-            name: r.name,
-            description: r.description,
-            cuisine: r.cuisine_type || r.cuisine || 'Other',
-            rating: parseFloat(r.rating),
-            deliveryTime: r.delivery_time || 30,
-            image: r.image_url || 'https://picsum.photos/seed/101/600/400',
-            imageHint: r.name,
-            menu: []
-          }));
-
+          const mappedResults = data.results.map(mapApiRestaurant);
           setSearchResults(mappedResults);
           setSearchError(false);
         } catch (error) {
@@ -69,13 +94,11 @@ export default function Home() {
     if (query.length > 2 && searchResults.length > 0) {
       return searchResults;
     }
-    // If search active but no results (and no error), handled by length check below
     if (query.length > 2 && searchResults.length === 0 && !isSearching && !searchError) {
       return [];
     }
-    // Default show all (static data for now)
-    return restaurants;
-  }, [query, searchResults, isSearching, searchError]);
+    return allRestaurants;
+  }, [query, searchResults, isSearching, searchError, allRestaurants]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -104,23 +127,11 @@ export default function Home() {
 
       {query.length > 2 && !searchError && (
         <h2 className="font-headline text-3xl font-semibold tracking-tight mb-6">
-          Results for "{query}"
+          Results for &quot;{query}&quot;
         </h2>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {displayedRestaurants.map((restaurant) => (
-          <RestaurantCard
-            key={restaurant.id}
-            restaurant={restaurant}
-            // Logic for 'isRecommended' was based on AI returns names.
-            // Here we can just highlight all results as valid matches.
-            isRecommended={false}
-          />
-        ))}
-      </div>
-
-      {isSearching && (
+      {(isLoadingRestaurants || isSearching) && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="flex flex-col space-y-3">
@@ -134,7 +145,19 @@ export default function Home() {
         </div>
       )}
 
-      {displayedRestaurants.length === 0 && !isSearching && query.length > 2 && (
+      {!isLoadingRestaurants && !isSearching && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {displayedRestaurants.map((restaurant) => (
+            <RestaurantCard
+              key={restaurant.id}
+              restaurant={restaurant}
+              isRecommended={false}
+            />
+          ))}
+        </div>
+      )}
+
+      {displayedRestaurants.length === 0 && !isSearching && !isLoadingRestaurants && query.length > 2 && (
         <div className="text-center col-span-full py-12">
           <p className="text-muted-foreground text-lg">No restaurants found matching your search.</p>
         </div>
