@@ -1,61 +1,30 @@
 'use client';
 
-import OrderSummary from '@/components/OrderSummary';
+import { Suspense } from 'react';
 import { Button } from '@/components/ui/button';
-import { useCart } from '@/hooks/useCart';
 import { CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useMemo } from 'react';
-import { restaurants } from '@/lib/data';
+import { useSearchParams } from 'next/navigation';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export default function ConfirmationPage() {
-  const { clearCart, cartItems } = useCart();
+function ConfirmationContent() {
+  const searchParams = useSearchParams();
+  const orderId = searchParams.get('orderId');
 
-  // Calculate delivery time based on restaurants in cart
-  const deliveryTime = useMemo(() => {
-    if (cartItems.length === 0) return 0;
-    
-    const restaurantIds = new Set<string>();
-    cartItems.forEach(item => {
-      const restaurantId = item.id.split('-')[0];
-      restaurantIds.add(restaurantId);
-    });
-    
-    const deliveryTimes = Array.from(restaurantIds).map(id => {
-      const restaurant = restaurants.find(r => r.id === id);
-      return restaurant?.deliveryTime || 0;
-    });
-    
-    return Math.max(...deliveryTimes, 0);
-  }, [cartItems]);
-
-  // If the user navigates here directly without items, redirect them.
-  // We don't clear cart immediately to allow refresh.
-  useEffect(() => {
-    if(cartItems.length === 0) {
-      // router.push('/'); // This would cause a loop on clearCart. Best to just show a message.
-    }
-  }, [cartItems.length]);
-  
-
-  const handleFinish = () => {
-    clearCart();
-  };
-
-  if (cartItems.length === 0) {
+  if (!orderId) {
     return (
-       <div className="container mx-auto px-4 py-8 text-center">
-         <div className="max-w-md mx-auto p-8">
-            <h1 className="font-headline text-3xl mb-2">No Order Found</h1>
-            <p className="text-muted-foreground mb-6">
-              It looks like you haven't placed an order yet.
-            </p>
-            <Button asChild>
-              <Link href="/">Browse Restaurants</Link>
-            </Button>
-          </div>
+      <div className="container mx-auto px-4 py-8 text-center">
+        <div className="max-w-md mx-auto p-8">
+          <h1 className="font-headline text-3xl mb-2">No Order Found</h1>
+          <p className="text-muted-foreground mb-6">
+            It looks like you haven&apos;t placed an order yet.
+          </p>
+          <Button asChild>
+            <Link href="/">Browse Restaurants</Link>
+          </Button>
+        </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -65,16 +34,35 @@ export default function ConfirmationPage() {
         <h1 className="font-headline text-4xl font-bold tracking-tight mb-4">
           Order Confirmed!
         </h1>
-        <p className="text-lg text-muted-foreground mb-8">
-          Thank you for your order. Your food is on its way and will arrive in approximately {deliveryTime} {deliveryTime === 1 ? 'minute' : 'minutes'}.
+        <p className="text-lg text-muted-foreground mb-4">
+          Your order has been placed successfully.
         </p>
-        <div className="text-left mb-8">
-          <OrderSummary />
-        </div>
-        <Button asChild size="lg" onClick={handleFinish}>
+        <p className="text-sm text-muted-foreground mb-2">
+          Order ID: <span className="font-mono font-semibold text-foreground">{orderId}</span>
+        </p>
+        <p className="text-lg text-muted-foreground mb-8">
+          Estimated delivery time: <span className="font-semibold">30-45 minutes</span>
+        </p>
+        <Button asChild size="lg">
           <Link href="/">Back to Restaurants</Link>
         </Button>
       </div>
     </div>
+  );
+}
+
+export default function ConfirmationPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-2xl mx-auto text-center space-y-4">
+          <Skeleton className="h-20 w-20 rounded-full mx-auto" />
+          <Skeleton className="h-10 w-64 mx-auto" />
+          <Skeleton className="h-6 w-80 mx-auto" />
+        </div>
+      </div>
+    }>
+      <ConfirmationContent />
+    </Suspense>
   );
 }
