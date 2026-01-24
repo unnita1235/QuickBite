@@ -1,7 +1,15 @@
 {
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["iad1"]
+  "buildCommand": "next build",
+  "installCommand": "npm install",
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://backend-production-e7ef.up.railway.app/api",
+    "NEXT_PUBLIC_WS_URL": "wss://backend-production-e7ef.up.railway.app"
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_API_URL": "https://backend-production-e7ef.up.railway.app/api",
+      "NEXT_PUBLIC_WS_URL": "wss://backend-production-e7ef.up.railway.app"
+    }
+  }
 }
