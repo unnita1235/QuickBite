@@ -6,45 +6,43 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Package } from 'lucide-react';
-
-interface Order {
-  id: string;
-  restaurantName: string;
-  items: string[];
-  total: number;
-  status: 'pending' | 'confirmed' | 'delivered' | 'cancelled';
-  createdAt: string;
-}
+import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
+import { Order } from '@/types';
+import { OrderSkeleton } from '@/components/OrderSkeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 export default function OrdersPage() {
   const { user } = useAuth();
   const router = useRouter();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock orders data - replace with API call
-  const orders: Order[] = [
-    {
-      id: '1',
-      restaurantName: 'Pizza Paradise',
-      items: ['Margherita Pizza', 'Garlic Bread'],
-      total: 250,
-      status: 'delivered',
-      createdAt: '2024-01-15',
-    },
-    {
-      id: '2',
-      restaurantName: 'Burger House',
-      items: ['Classic Burger', 'Fries', 'Coke'],
-      total: 180,
-      status: 'confirmed',
-      createdAt: '2024-01-10',
-    },
-  ];
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await api.getOrders();
+        setOrders(response.data);
+      } catch (err) {
+        setError('Failed to load orders');
+        console.error('Error fetching orders:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchOrders();
+  }, []);
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
       case 'delivered':
         return 'text-green-600 bg-green-50';
       case 'confirmed':
+      case 'preparing':
+      case 'on_the_way':
         return 'text-blue-600 bg-blue-50';
       case 'pending':
         return 'text-yellow-600 bg-yellow-50';
@@ -68,18 +66,29 @@ export default function OrdersPage() {
           </div>
 
           {/* Orders List */}
-          {orders.length > 0 ? (
+          {loading ? (
+            <div className="space-y-4">
+              <OrderSkeleton />
+              <OrderSkeleton />
+              <OrderSkeleton />
+            </div>
+          ) : error ? (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          ) : orders.length > 0 ? (
             <div className="space-y-4">
               {orders.map((order) => (
                 <Card key={order.id}>
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle className="text-xl">{order.restaurantName}</CardTitle>
+                        <CardTitle className="text-xl">{order.restaurant_name || `Restaurant #${order.restaurant_id}`}</CardTitle>
                         <CardDescription>Order #{order.id}</CardDescription>
                       </div>
                       <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        {order.status.charAt(0).toUpperCase() + order.status.slice(1).replace('_', ' ')}
                       </span>
                     </div>
                   </CardHeader>
@@ -90,18 +99,25 @@ export default function OrdersPage() {
                         <ul className="list-disc list-inside space-y-1">
                           {order.items.map((item, idx) => (
                             <li key={idx} className="text-gray-700">
-                              {item}
+                              {item.name} x {item.quantity} - ₹{item.price}
                             </li>
                           ))}
                         </ul>
                       </div>
+                      {order.delivery_address && (
+                        <div>
+                          <h4 className="font-semibold mb-1">Delivery Address:</h4>
+                          <p className="text-gray-700">{order.delivery_address}</p>
+                        </div>
+                      )}
                       <div className="flex justify-between items-center pt-4 border-t">
                         <div>
-                          <p className="text-sm text-gray-600">Order Date: {order.createdAt}</p>
-                          <p className="text-lg font-bold text-emerald-600">₹{order.total}</p>
+                          <p className="text-sm text-gray-600">Order Date: {new Date(order.created_at).toLocaleDateString()}</p>
+                          <p className="text-lg font-bold text-emerald-600">₹{order.total_amount}</p>
                         </div>
-                        <Button variant="outline" onClick={() => router.push(`/orders/${order.id}`)}
-                          className="w-full h-4 text-4">View Details</Button>
+                        <Button variant="outline" onClick={() => router.push(`/orders/${order.id}`)}>
+                          View Details
+                        </Button>
                       </div>
                     </div>
                   </CardContent>

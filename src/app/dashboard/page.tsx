@@ -7,10 +7,25 @@ import { Button } from '@/components/ui/button';
 import { ShoppingBag, MapPin, CreditCard, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const [stats, setStats] = useState({ totalOrders: 0, savedAddresses: 1 });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const ordersResponse = await api.getOrders();
+        setStats(prev => ({ ...prev, totalOrders: ordersResponse.data.length }));
+      } catch (err) {
+        console.error('Failed to fetch stats:', err);
+      }
+    };
+    fetchStats();
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -33,7 +48,7 @@ export default function DashboardPage() {
                 <ShoppingBag className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">0</div>
+                <div className="text-2xl font-bold">{stats.totalOrders}</div>
                 <p className="text-xs text-gray-600">All time orders</p>
               </CardContent>
             </Card>
@@ -43,7 +58,7 @@ export default function DashboardPage() {
                 <MapPin className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">1</div>
+                <div className="text-2xl font-bold">{stats.savedAddresses}</div>
                 <p className="text-xs text-gray-600">Saved addresses</p>
               </CardContent>
             </Card>

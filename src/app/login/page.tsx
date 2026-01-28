@@ -37,7 +37,8 @@ export default function LoginPage() {
 
     const result = await login(email, password);
     if (!result.success) {
-setError('Login failed');    }
+      setError(result.error || 'Invalid email or password');
+    }
     setIsSubmitting(false);
   };
 
