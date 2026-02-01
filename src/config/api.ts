@@ -73,7 +73,7 @@ const clearAuthToken = (): void => {
 };
 
 // Generic fetch helper
-const fetchApi = async<T>(
+const fetchApi = async <T,>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
@@ -127,8 +127,15 @@ export const api = {
         body: JSON.stringify({ email, password }),
       });
 
-      if (response.success && response.data?.token) {
-        setAuthToken(response.data.token);
+      // Server returns token/user at top level, map to data field
+      const raw = response as any;
+      if (response.success && (response.data?.token || raw.token)) {
+        const token = response.data?.token || raw.token;
+        const user = response.data?.user || raw.user;
+        setAuthToken(token);
+        if (!response.data) {
+          response.data = { token, user } as AuthResponse;
+        }
       }
 
       return response;
@@ -202,6 +209,28 @@ export const api = {
       return fetchApi<User>('/users/profile', {
         method: 'PUT',
         body: JSON.stringify({ name, email }),
+      });
+    },
+  },
+
+  // Cart endpoints
+  cart: {
+    get: async () => {
+      return fetchApi<{ items: any[]; updated_at: string | null }>('/cart', {
+        method: 'GET',
+      });
+    },
+
+    save: async (items: any[]) => {
+      return fetchApi<{ items: any[]; updated_at: string }>('/cart', {
+        method: 'PUT',
+        body: JSON.stringify({ items }),
+      });
+    },
+
+    clear: async () => {
+      return fetchApi('/cart', {
+        method: 'DELETE',
       });
     },
   },
