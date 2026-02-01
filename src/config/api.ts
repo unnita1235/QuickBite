@@ -13,6 +13,9 @@ interface User {
   id: number;
   email: string;
   name: string;
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
 }
 
 interface AuthResponse {
@@ -27,31 +30,86 @@ interface Restaurant {
   cuisine_type: string;
   rating: number;
   delivery_time: number;
+  delivery_charge?: number;
+  min_order?: number;
+  image_url?: string;
   address: string;
+  phone?: string;
+  is_active?: boolean;
   menus?: Menu[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface Menu {
   id: number;
+  restaurant_id?: number;
   name: string;
   items: MenuItem[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface MenuItem {
-  id: number;
+  id: number | string;
   name: string;
   price: number;
   description: string;
+  image?: string;
+  quantity?: number;
 }
 
 interface Order {
   id: number;
   user_id: number;
   restaurant_id: number;
+  restaurant_name?: string;
   items: MenuItem[];
   total_amount: number;
+  delivery_fee?: number;
+  delivery_address?: string;
+  delivery_notes?: string;
   status: string;
   created_at: string;
+  updated_at?: string;
+  completed_at?: string;
+}
+
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  image: string;
+  imageHint: string;
+  quantity: number;
+}
+
+interface SearchParams {
+  query: string;
+  cuisineType?: string;
+  minRating?: number;
+  maxDeliveryTime?: number;
+  limit?: number;
+  offset?: number;
+}
+
+interface SearchResponse {
+  results: Restaurant[];
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+  };
+}
+
+interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+  };
 }
 
 // Utility function to get auth token
@@ -77,14 +135,14 @@ const fetchApi = async <T,>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers,
+    ...(options.headers as Record<string, string>),
   };
 
   const token = getAuthToken();
   if (token) {
-    (headers as any)['Authorization'] = `Bearer ${token}`;
+    headers['Authorization'] = `Bearer ${token}`;
   }
 
   try {
@@ -128,12 +186,14 @@ export const api = {
       });
 
       // Server returns token/user at top level, map to data field
-      const raw = response as any;
+      const raw = response as ApiResponse<AuthResponse> & { token?: string; user?: User };
       if (response.success && (response.data?.token || raw.token)) {
         const token = response.data?.token || raw.token;
         const user = response.data?.user || raw.user;
-        setAuthToken(token);
-        if (!response.data) {
+        if (token) {
+          setAuthToken(token);
+        }
+        if (!response.data && token && user) {
           response.data = { token, user } as AuthResponse;
         }
       }
@@ -155,7 +215,7 @@ export const api = {
   // Restaurant endpoints
   restaurants: {
     getAll: async (page: number = 0, limit: number = 20) => {
-      return fetchApi<{ data: Restaurant[]; pagination: any }>(
+      return fetchApi<PaginatedResponse<Restaurant>>(
         `/restaurants?page=${page}&limit=${limit}`,
         { method: 'GET' }
       );
@@ -177,10 +237,22 @@ export const api = {
 
   // Order endpoints
   orders: {
-    create: async (restaurantId: number, items: MenuItem[], totalAmount: number) => {
+    create: async (
+      restaurantId: number,
+      items: MenuItem[],
+      totalAmount: number,
+      deliveryAddress?: string,
+      deliveryNotes?: string
+    ) => {
       return fetchApi<Order>('/orders', {
         method: 'POST',
-        body: JSON.stringify({ restaurantId, items, totalAmount }),
+        body: JSON.stringify({
+          restaurantId,
+          items,
+          totalAmount,
+          deliveryAddress,
+          deliveryNotes,
+        }),
       });
     },
 
@@ -195,6 +267,13 @@ export const api = {
         method: 'GET',
       });
     },
+
+    updateStatus: async (id: string | number, status: string) => {
+      return fetchApi<Order>(`/orders/${id}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ status }),
+      });
+    },
   },
 
   // User endpoints
@@ -205,24 +284,29 @@ export const api = {
       });
     },
 
-    updateProfile: async (name?: string, email?: string) => {
+    updateProfile: async (profile: {
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+      email?: string;
+    }) => {
       return fetchApi<User>('/users/profile', {
         method: 'PUT',
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify(profile),
       });
     },
   },
 
   // Cart endpoints
   cart: {
-    get: async () => {
-      return fetchApi<{ items: any[]; updated_at: string | null }>('/cart', {
+    get: async <T = CartItem>() => {
+      return fetchApi<{ items: T[]; updated_at: string | null }>('/cart', {
         method: 'GET',
       });
     },
 
-    save: async (items: any[]) => {
-      return fetchApi<{ items: any[]; updated_at: string }>('/cart', {
+    save: async <T = CartItem>(items: T[]) => {
+      return fetchApi<{ items: T[]; updated_at: string }>('/cart', {
         method: 'PUT',
         body: JSON.stringify({ items }),
       });
@@ -235,6 +319,14 @@ export const api = {
     },
   },
 
+  // Search endpoint
+  search: async (params: SearchParams) => {
+    return fetchApi<SearchResponse>('/search', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  },
+
   // Health check
   health: async () => {
     return fetchApi('/health', { method: 'GET' });
@@ -242,4 +334,16 @@ export const api = {
 };
 
 export { getAuthToken, setAuthToken, clearAuthToken };
-export type { ApiResponse, User, Restaurant, Menu, MenuItem, Order, AuthResponse };
+export type {
+  ApiResponse,
+  User,
+  Restaurant,
+  Menu,
+  MenuItem,
+  Order,
+  AuthResponse,
+  CartItem,
+  SearchParams,
+  SearchResponse,
+  PaginatedResponse,
+};

@@ -5,9 +5,14 @@ import { useRouter } from 'next/navigation';
 import { api, getAuthToken } from '@/config/api';
 
 interface User {
-  id: string;
+  id: number;
   email: string;
   name: string;
+}
+
+interface AuthResult {
+  success: boolean;
+  error?: string;
 }
 
 interface AuthContextType {
@@ -15,8 +20,8 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<{success: boolean}>;
-  register: (email: string, password: string, name: string) => Promise<{success: boolean}>;
+  login: (email: string, password: string) => Promise<AuthResult>;
+  register: (email: string, password: string, name: string) => Promise<AuthResult>;
   logout: () => void;
 }
 
@@ -28,32 +33,71 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Load token from localStorage on mount
+  // Load token from localStorage on mount and validate it
   useEffect(() => {
-    const storedToken = getAuthToken();
-    const storedUser = localStorage.getItem('user');
+    const initAuth = async () => {
+      const storedToken = getAuthToken();
 
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-    }
+      if (!storedToken) {
+        setIsLoading(false);
+        return;
+      }
 
-    setIsLoading(false);
+      // Try to parse stored user data
+      let storedUser: User | null = null;
+      try {
+        const raw = localStorage.getItem('user');
+        if (raw) {
+          storedUser = JSON.parse(raw);
+        }
+      } catch {
+        localStorage.removeItem('user');
+      }
+
+      // Set optimistically from localStorage, then validate
+      if (storedUser) {
+        setToken(storedToken);
+        setUser(storedUser);
+      }
+
+      // Validate token by fetching current user from server
+      try {
+        const response = await api.auth.getCurrentUser();
+        if (response.success && response.data) {
+          const validatedUser = response.data as unknown as User;
+          setToken(storedToken);
+          setUser(validatedUser);
+          localStorage.setItem('user', JSON.stringify(validatedUser));
+        } else {
+          // Token is invalid/expired - clear auth state
+          setToken(null);
+          setUser(null);
+          api.auth.logout();
+          localStorage.removeItem('user');
+        }
+      } catch {
+        // Network error - keep the optimistic state from localStorage
+      }
+
+      setIsLoading(false);
+    };
+
+    initAuth();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<AuthResult> => {
     try {
       const response = await api.auth.login(email, password);
 
       if (!response.success) {
-        throw new Error(response.error || 'Login failed');
+        return { success: false, error: response.error || 'Login failed' };
       }
 
       const loginToken = response.data?.token;
       const loginUser = response.data?.user;
 
       if (!loginToken || !loginUser) {
-        throw new Error('Invalid response from server');
+        return { success: false, error: 'Invalid response from server' };
       }
 
       setToken(loginToken);
@@ -63,24 +107,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return { success: true };
     } catch (error) {
       console.error('Login error:', error);
-      return { success: false };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'An unexpected error occurred',
+      };
     }
   };
 
-  const register = async (email: string, password: string, name: string) => {
+  const register = async (email: string, password: string, name: string): Promise<AuthResult> => {
     try {
       const response = await api.auth.register(email, password, name);
 
       if (!response.success) {
-        throw new Error(response.error || 'Registration failed');
+        return { success: false, error: response.error || 'Registration failed' };
       }
 
       // Auto-login after registration
-      await login(email, password);
-      return { success: true };
+      const loginResult = await login(email, password);
+      return loginResult;
     } catch (error) {
       console.error('Registration error:', error);
-      return { success: false };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'An unexpected error occurred',
+      };
     }
   };
 

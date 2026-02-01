@@ -125,7 +125,9 @@ app.get('/', (req, res) => res.json({
     auth: '/api/auth',
     restaurants: '/api/restaurants',
     orders: '/api/orders',
-    users: '/api/users'
+    users: '/api/users',
+    cart: '/api/cart',
+    search: 'POST /api/search'
   }
 }));
 
@@ -139,10 +141,12 @@ app.use((req, res) => {
     ...(process.env.NODE_ENV === 'development' && {
       availableEndpoints: {
         auth: ['POST /api/auth/register', 'POST /api/auth/login'],
-        restaurants: ['GET /api/restaurants', 'GET /api/restaurants/:id', 'POST /api/search'],
+        restaurants: ['GET /api/restaurants', 'GET /api/restaurants/:id', 'POST /api/restaurants'],
+        menus: ['GET /api/restaurants/:id/menus', 'POST /api/restaurants/:id/menus', 'PUT /api/restaurants/:restaurantId/menus/:menuId', 'DELETE /api/restaurants/:restaurantId/menus/:menuId'],
         orders: ['POST /api/orders', 'GET /api/orders', 'GET /api/orders/:id', 'PUT /api/orders/:id/status'],
         users: ['GET /api/users/profile', 'PUT /api/users/profile'],
-        menus: ['GET /api/restaurants/:id/menus', 'POST /api/restaurants/:id/menus']
+        cart: ['GET /api/cart', 'PUT /api/cart', 'DELETE /api/cart'],
+        search: ['POST /api/search']
       }
     })
   });
@@ -176,12 +180,37 @@ app.use((err, req, res, next) => {
 });
 
 // ===== SERVER START =====
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`\n${'='.repeat(50)}`);
   console.log(`Backend running on port ${PORT}`);
   console.log(`API: http://localhost:${PORT}/api`);
   console.log(`Health: http://localhost:${PORT}/api/health`);
   console.log(`${'='.repeat(50)}\n`);
 });
+
+// ===== GRACEFUL SHUTDOWN =====
+const shutdown = async (signal) => {
+  console.log(`\n${signal} received. Shutting down gracefully...`);
+
+  server.close(async () => {
+    console.log('HTTP server closed.');
+    try {
+      await pool.end();
+      console.log('Database pool closed.');
+    } catch (err) {
+      console.error('Error closing database pool:', err.message);
+    }
+    process.exit(0);
+  });
+
+  // Force shutdown after 10 seconds if graceful shutdown fails
+  setTimeout(() => {
+    console.error('Forced shutdown after timeout.');
+    process.exit(1);
+  }, 10000);
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
 
 export default app;

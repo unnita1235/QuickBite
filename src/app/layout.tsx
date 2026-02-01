@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://quick-bite.vercel.app',
+    url: 'https://quick-bite-mu.vercel.app',
     title: 'QuickBite - Food Delivery Made Easy',
     description: 'Discover local restaurants and delicious cuisines with AI-powered recommendations.',
     siteName: 'QuickBite',
@@ -63,17 +63,16 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <ErrorBoundary>
-                <AuthProvider>
-          <CartProvider>
-            <div className="relative flex min-h-screen flex-col">
-              <Header />
-              <main className="flex-1">{children}</main>
-            </div>
-            <Toaster />
-
-                        </CartProvider>
-                      </AuthProvider>
-       </ErrorBoundary>
+          <AuthProvider>
+            <CartProvider>
+              <div className="relative flex min-h-screen flex-col">
+                <Header />
+                <main className="flex-1">{children}</main>
+              </div>
+              <Toaster />
+            </CartProvider>
+          </AuthProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
