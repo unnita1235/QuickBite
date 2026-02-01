@@ -1,7 +1,10 @@
 -- QuickBite Database Migrations
 -- Initial database schema setup
 
+BEGIN;
+
 -- Drop existing tables if they exist (for fresh migration)
+DROP TABLE IF EXISTS carts CASCADE;
 DROP TABLE IF EXISTS menus CASCADE;
 DROP TABLE IF EXISTS orders CASCADE;
 DROP TABLE IF EXISTS restaurants CASCADE;
@@ -40,27 +43,30 @@ CREATE TABLE restaurants (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create index for active restaurants
+-- Create indexes for restaurants
 CREATE INDEX idx_restaurants_active ON restaurants(is_active);
+CREATE INDEX idx_restaurants_cuisine_type ON restaurants(cuisine_type);
 
 -- Create menus table
 CREATE TABLE menus (
   id SERIAL PRIMARY KEY,
   restaurant_id INT NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
   name VARCHAR(255) NOT NULL,
-  items JSONB,
+  items JSONB DEFAULT '[]'::jsonb,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create index for menus
+-- Create indexes for menus
 CREATE INDEX idx_menus_restaurant_id ON menus(restaurant_id);
+CREATE INDEX idx_menus_items ON menus USING GIN (items);
 
 -- Create orders table
 CREATE TABLE orders (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   restaurant_id INT NOT NULL REFERENCES restaurants(id),
+  items JSONB DEFAULT '[]'::jsonb,
   total_amount DECIMAL(10,2) NOT NULL,
   delivery_fee DECIMAL(5,2),
   status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'preparing', 'on_the_way', 'delivered', 'cancelled')),
@@ -76,6 +82,53 @@ CREATE INDEX idx_orders_user_id ON orders(user_id);
 CREATE INDEX idx_orders_restaurant_id ON orders(restaurant_id);
 CREATE INDEX idx_orders_status ON orders(status);
 CREATE INDEX idx_orders_created_at ON orders(created_at DESC);
+CREATE INDEX idx_orders_items ON orders USING GIN (items);
+
+-- Create carts table for server-side cart persistence
+CREATE TABLE carts (
+  id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  items JSONB DEFAULT '[]'::jsonb,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create index for cart user lookups
+CREATE INDEX idx_carts_user_id ON carts(user_id);
+
+-- Create updated_at trigger function
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Apply updated_at triggers to all tables
+CREATE TRIGGER update_users_updated_at
+    BEFORE UPDATE ON users
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_restaurants_updated_at
+    BEFORE UPDATE ON restaurants
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_menus_updated_at
+    BEFORE UPDATE ON menus
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_orders_updated_at
+    BEFORE UPDATE ON orders
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_carts_updated_at
+    BEFORE UPDATE ON carts
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
 
 -- Insert sample restaurants
 INSERT INTO restaurants (name, description, cuisine_type, rating, delivery_time, delivery_charge, min_order, image_url, address, phone, is_active) VALUES
@@ -86,9 +139,4 @@ INSERT INTO restaurants (name, description, cuisine_type, rating, delivery_time,
 ('Pizza Place', 'Wood-fired pizza and fresh salads', 'Italian', 4.7, 30, 2.99, 18.00, 'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=500', '654 Maple Dr', '555-0105', true),
 ('Curry Kitchen', 'Spicy Indian curries and breads', 'Indian', 4.4, 40, 3.49, 16.00, 'https://images.unsplash.com/photo-1585238341710-4b9c5c7c5d5e?w=500', '987 Cedar Ln', '555-0106', true);
 
--- Create sample user for testing
-INSERT INTO users (email, password_hash, first_name, last_name, phone) VALUES
-('test@example.com', '$2b$10$examplehashedpassword', 'Test', 'User', '555-0001');
-
--- Commit transaction
 COMMIT;
