@@ -1,7 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import type { MenuItem } from '@/lib/data';
+import { api, getAuthToken } from '@/config/api';
 
 export type CartItem = MenuItem & {
   quantity: number;
@@ -21,46 +22,84 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Load cart: try server first (if authenticated), then localStorage
   useEffect(() => {
-    try {
-      const storedCart = localStorage.getItem('quickbite-cart');
-      if (storedCart) {
-        setCartItems(JSON.parse(storedCart));
+    const loadCart = async () => {
+      const token = getAuthToken();
+
+      if (token) {
+        try {
+          const response = await api.cart.get();
+          if (response.success && response.data?.items && response.data.items.length > 0) {
+            setCartItems(response.data.items);
+            setIsInitialLoad(false);
+            return;
+          }
+        } catch {
+          // Fall through to localStorage
+        }
       }
+
+      try {
+        const storedCart = localStorage.getItem('quickbite-cart');
+        if (storedCart) {
+          setCartItems(JSON.parse(storedCart));
+        }
+      } catch (error) {
+        console.error("Failed to parse cart from localStorage", error);
+        localStorage.removeItem('quickbite-cart');
+      }
+
+      setIsInitialLoad(false);
+    };
+
+    loadCart();
+  }, []);
+
+  // Sync cart to localStorage and server (debounced)
+  const syncCart = useCallback((items: CartItem[]) => {
+    // Always persist to localStorage
+    try {
+      localStorage.setItem('quickbite-cart', JSON.stringify(items));
     } catch (error) {
-      console.error("Failed to parse cart from localStorage", error);
-      localStorage.removeItem('quickbite-cart');
+      console.error("Failed to save cart to localStorage", error);
     }
-    setIsInitialLoad(false);
+
+    // Debounced sync to server if authenticated
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current);
+    }
+
+    syncTimeoutRef.current = setTimeout(async () => {
+      const token = getAuthToken();
+      if (token) {
+        try {
+          await api.cart.save(items);
+        } catch {
+          // Silently fail - localStorage is the fallback
+        }
+      }
+    }, 1000);
   }, []);
 
   useEffect(() => {
     if (!isInitialLoad) {
-      try {
-        localStorage.setItem('quickbite-cart', JSON.stringify(cartItems));
-      } catch (error) {
-        console.error("Failed to save cart to localStorage", error);
-      }
+      syncCart(cartItems);
     }
-  }, [cartItems, isInitialLoad]);
+  }, [cartItems, isInitialLoad, syncCart]);
 
-  /**
-   * Adds an item to the cart. If the item already exists, increments its quantity.
-   * @param item - The menu item to add to the cart
-   */
   const addToCart = (item: MenuItem) => {
     setCartItems((prevItems: CartItem[]) => {
       const existingItem = prevItems.find((cartItem: CartItem) => cartItem.id === item.id);
       if (existingItem) {
-        // Item already in cart - increment quantity
         return prevItems.map((cartItem: CartItem) =>
           cartItem.id === item.id
             ? { ...cartItem, quantity: cartItem.quantity + 1 }
             : cartItem
         );
       } else {
-        // New item - add with quantity 1
         return [...prevItems, { ...item, quantity: 1 }];
       }
     });
@@ -70,12 +109,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setCartItems((prevItems: CartItem[]) => prevItems.filter((item: CartItem) => item.id !== itemId));
   };
 
-  /**
-   * Updates the quantity of an item in the cart.
-   * If quantity is 0 or less, the item is removed from the cart.
-   * @param itemId - The ID of the item to update
-   * @param quantity - The new quantity (must be > 0)
-   */
   const updateQuantity = (itemId: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(itemId);
@@ -90,16 +123,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const clearCart = () => {
     setCartItems([]);
+    // Also clear server cart
+    const token = getAuthToken();
+    if (token) {
+      api.cart.clear().catch(() => {});
+    }
   };
 
-  /**
-   * Calculates the total price of all items in the cart.
-   * @returns The sum of (item price * quantity) for all cart items
-   */
   const getTotalPrice = () => {
     return cartItems.reduce((total: number, item: CartItem) => total + item.price * item.quantity, 0);
   };
-  
+
   const value = { cartItems, addToCart, removeFromCart, updateQuantity, clearCart, getTotalPrice };
 
   return (

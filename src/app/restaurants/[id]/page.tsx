@@ -1,4 +1,5 @@
 import { restaurants } from '@/lib/data';
+import { getRestaurantById } from '@/lib/restaurant-service';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import MenuList from '@/components/MenuList';
@@ -19,7 +20,7 @@ export async function generateStaticParams() {
 
 export default async function RestaurantPage({ params }: RestaurantPageProps) {
   const { id } = await params;
-  const restaurant = restaurants.find((r) => r.id === id);
+  const restaurant = await getRestaurantById(id);
 
   if (!restaurant) {
     notFound();

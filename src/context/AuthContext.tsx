@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { api, getAuthToken } from '@/config/api';
 
 interface User {
   id: string;
@@ -29,68 +30,64 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Load token from localStorage on mount
   useEffect(() => {
-    const storedToken = localStorage.getItem('authToken');
+    const storedToken = getAuthToken();
     const storedUser = localStorage.getItem('user');
-    
+
     if (storedToken && storedUser) {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
     }
-    
+
     setIsLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        }
-      );
+      const response = await api.auth.login(email, password);
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Login failed');
+      if (!response.success) {
+        throw new Error(response.error || 'Login failed');
+      }
 
-      setToken(data.token);
-      setUser(data.user);
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      const loginToken = response.data?.token;
+      const loginUser = response.data?.user;
+
+      if (!loginToken || !loginUser) {
+        throw new Error('Invalid response from server');
+      }
+
+      setToken(loginToken);
+      setUser(loginUser as unknown as User);
+      localStorage.setItem('user', JSON.stringify(loginUser));
       router.push('/dashboard');
-          return { success: true };
+      return { success: true };
     } catch (error) {
       console.error('Login error:', error);
-return { success: false };    }
+      return { success: false };
+    }
   };
 
   const register = async (email: string, password: string, name: string) => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, name }),
-        }
-      );
+      const response = await api.auth.register(email, password, name);
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Registration failed');
+      if (!response.success) {
+        throw new Error(response.error || 'Registration failed');
+      }
 
       // Auto-login after registration
       await login(email, password);
-          return { success: true };
+      return { success: true };
     } catch (error) {
       console.error('Registration error:', error);
-return { success: false };    }
+      return { success: false };
+    }
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('authToken');
+    api.auth.logout();
     localStorage.removeItem('user');
     router.push('/login');
   };
