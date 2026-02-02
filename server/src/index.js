@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
 
@@ -8,9 +9,12 @@ import restaurantRoutes from './routes/restaurants.routes.js';
 import orderRoutes from './routes/orders.routes.js';
 import userRoutes from './routes/users.routes.js';
 import cartRoutes from './routes/cart.routes.js';
+import checkoutRoutes from './routes/checkout.routes.js';
+import webhookRoutes from './routes/webhook.routes.js';
 import pool from './db.js';
 import { sanitizeString } from './validation.js';
 import { handleError } from './middleware.js';
+import errorHandler from './middleware/errorHandler.js';
 
 dotenv.config();
 
@@ -32,11 +36,17 @@ const globalLimiter = rateLimit({
 });
 
 app.use(globalLimiter);
+
+// Stripe webhook needs raw body for signature verification (must be before json parser)
+app.use('/api/webhook', express.raw({ type: 'application/json' }));
+
+// JSON parser for all other routes
 app.use(express.json({ limit: '10mb' }));
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true
 }));
+app.use(helmet());
 
 // ===== HEALTH CHECK =====
 app.get('/api/health', (req, res) => {
@@ -54,6 +64,8 @@ app.use('/api/restaurants', restaurantRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/checkout', checkoutRoutes);
+app.use('/api/webhook', webhookRoutes);
 
 // ===== SEARCH ENDPOINT =====
 app.post('/api/search', async (req, res) => {
@@ -142,38 +154,16 @@ app.use((req, res) => {
         restaurants: ['GET /api/restaurants', 'GET /api/restaurants/:id', 'POST /api/search'],
         orders: ['POST /api/orders', 'GET /api/orders', 'GET /api/orders/:id', 'PUT /api/orders/:id/status'],
         users: ['GET /api/users/profile', 'PUT /api/users/profile'],
-        menus: ['GET /api/restaurants/:id/menus', 'POST /api/restaurants/:id/menus']
+        menus: ['GET /api/restaurants/:id/menus', 'POST /api/restaurants/:id/menus'],
+        checkout: ['POST /api/checkout/create-session', 'GET /api/checkout/session/:sessionId'],
+        webhook: ['POST /api/webhook/stripe']
       }
     })
   });
 });
 
 // ===== GLOBAL ERROR HANDLER =====
-app.use((err, req, res, next) => {
-  console.error('[Application Error]', {
-    message: err.message,
-    stack: err.stack,
-    path: req.path,
-    method: req.method,
-    timestamp: new Date().toISOString()
-  });
-
-  if (err.name === 'JsonWebTokenError') {
-    return res.status(401).json({ success: false, error: 'Invalid token' });
-  }
-
-  if (err.name === 'TokenExpiredError') {
-    return res.status(401).json({ success: false, error: 'Token expired' });
-  }
-
-  res.status(err.status || 500).json({
-    success: false,
-    error: process.env.NODE_ENV === 'production'
-      ? 'Internal server error'
-      : err.message,
-    ...(process.env.NODE_ENV === 'development' && { debug: err.stack })
-  });
-});
+app.use(errorHandler);
 
 // ===== SERVER START =====
 app.listen(PORT, () => {
