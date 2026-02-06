@@ -4,37 +4,35 @@ import OrderSummary from '@/components/OrderSummary';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCart } from '@/hooks/useCart';
-import { ShoppingCart } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { api } from '@/config/api';
+import { ShoppingCart, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { restaurants } from '@/lib/data';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 export default function CheckoutPage() {
-  const { cartItems } = useCart();
+  const { cartItems, clearCart } = useCart();
+  const { isAuthenticated } = useAuth();
   const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  /**
-   * Calculates delivery time based on restaurants in the cart.
-   * Menu item IDs follow the format "restaurantId-itemId" (e.g., "1-1", "2-3").
-   * If items are from multiple restaurants, returns the maximum delivery time.
-   * @returns The maximum delivery time in minutes, or 0 if cart is empty
-   */
   const deliveryTime = useMemo(() => {
     if (cartItems.length === 0) return 0;
-    
+
     const restaurantIds = new Set<string>();
     cartItems.forEach(item => {
       const restaurantId = item.id.split('-')[0];
       restaurantIds.add(restaurantId);
     });
-    
-    // Find maximum delivery time among all restaurants in cart
+
     const deliveryTimes = Array.from(restaurantIds).map(id => {
       const restaurant = restaurants.find(r => r.id === id);
       return restaurant?.deliveryTime || 0;
     });
-    
+
     return Math.max(...deliveryTimes, 0);
   }, [cartItems]);
 
@@ -55,10 +53,64 @@ export default function CheckoutPage() {
     );
   }
 
-  const handlePlaceOrder = () => {
-    // In a real app, this would submit the order to a backend.
-    // For this demo, we'll just navigate to the confirmation page.
-    router.push('/confirmation');
+  const handlePlaceOrder = async () => {
+    // Redirect to login if not authenticated.
+    // The backend POST /api/orders requires verifyToken (server/src/routes/orders.routes.js:8).
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      // Group cart items by restaurant.
+      // Cart item IDs use format "restaurantId-itemId" (verified in src/lib/data.ts:29+).
+      // One order per restaurant (user chose Option A).
+      const itemsByRestaurant = new Map<number, typeof cartItems>();
+
+      for (const item of cartItems) {
+        const restaurantId = parseInt(item.id.split('-')[0], 10);
+        if (!itemsByRestaurant.has(restaurantId)) {
+          itemsByRestaurant.set(restaurantId, []);
+        }
+        itemsByRestaurant.get(restaurantId)!.push(item);
+      }
+
+      const orderPromises = Array.from(itemsByRestaurant.entries()).map(
+        ([restaurantId, items]) => {
+          const orderItems = items.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            description: item.description,
+          }));
+          const totalAmount = items.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0
+          );
+          return api.orders.create(restaurantId, orderItems, totalAmount);
+        }
+      );
+
+      const results = await Promise.all(orderPromises);
+
+      const failedOrder = results.find(r => !r.success);
+      if (failedOrder) {
+        setError(failedOrder.error || 'One or more orders could not be submitted. Please try again.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // All orders succeeded — clear the cart, then navigate to confirmation.
+      clearCart();
+      router.push('/confirmation');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.');
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -82,12 +134,33 @@ export default function CheckoutPage() {
                 </p>
             </CardContent>
           </Card>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+              <p className="text-sm">{error}</p>
+            </div>
+          )}
+
+          {!isAuthenticated && (
+            <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-md">
+              <p className="text-sm">You need to <Link href="/login" className="underline font-semibold">log in</Link> to place an order.</p>
+            </div>
+          )}
+
            <Button
             size="lg"
             className="w-full bg-accent text-accent-foreground hover:bg-accent/90 text-lg py-6"
             onClick={handlePlaceOrder}
+            disabled={isSubmitting}
           >
-            Place Your Order
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Placing Order...
+              </>
+            ) : (
+              'Place Your Order'
+            )}
           </Button>
         </div>
       </div>

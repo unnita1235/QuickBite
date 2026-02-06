@@ -44,14 +44,27 @@ interface MenuItem {
   description: string;
 }
 
+interface OrderItem {
+  id?: number | string;
+  name: string;
+  price: number;
+  quantity?: number;
+  description?: string;
+}
+
 interface Order {
   id: number;
   user_id: number;
   restaurant_id: number;
-  items: MenuItem[];
+  items: OrderItem[];
   total_amount: number;
-  status: string;
+  status: 'pending' | 'confirmed' | 'preparing' | 'on_the_way' | 'delivered' | 'cancelled';
+  delivery_address: string | null;
+  delivery_notes: string | null;
   created_at: string;
+  updated_at: string | null;
+  completed_at: string | null;
+  restaurant_name?: string;
 }
 
 // Utility function to get auth token
@@ -177,10 +190,10 @@ export const api = {
 
   // Order endpoints
   orders: {
-    create: async (restaurantId: number, items: MenuItem[], totalAmount: number) => {
+    create: async (restaurantId: number, items: OrderItem[], totalAmount: number, deliveryAddress?: string, deliveryNotes?: string) => {
       return fetchApi<Order>('/orders', {
         method: 'POST',
-        body: JSON.stringify({ restaurantId, items, totalAmount }),
+        body: JSON.stringify({ restaurantId, items, totalAmount, deliveryAddress, deliveryNotes }),
       });
     },
 
@@ -205,10 +218,10 @@ export const api = {
       });
     },
 
-    updateProfile: async (name?: string, email?: string) => {
+    updateProfile: async (firstName?: string, lastName?: string, phone?: string, email?: string) => {
       return fetchApi<User>('/users/profile', {
         method: 'PUT',
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({ firstName, lastName, phone, email }),
       });
     },
   },
@@ -242,4 +255,4 @@ export const api = {
 };
 
 export { getAuthToken, setAuthToken, clearAuthToken };
-export type { ApiResponse, User, Restaurant, Menu, MenuItem, Order, AuthResponse };
+export type { ApiResponse, User, Restaurant, Menu, MenuItem, OrderItem, Order, AuthResponse };

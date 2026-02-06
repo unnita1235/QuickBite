@@ -20,13 +20,21 @@ async function runMigration() {
         const client = await pool.connect();
         console.log('✅ Connected');
 
-        console.log('🔄 Reading migration file...');
-        const migrationPath = path.join(__dirname, 'migrations', '001_create_tables.sql');
-        const sql = fs.readFileSync(migrationPath, 'utf8');
+        const migrationFiles = [
+            '001_create_tables.sql',
+            '002_add_items_to_orders.sql',
+            '003_create_carts_table.sql',
+        ];
 
-        console.log('🔄 Executing migration...');
-        await client.query(sql);
-        console.log('✅ Migration executed successfully');
+        for (const file of migrationFiles) {
+            console.log(`🔄 Reading migration: ${file}...`);
+            const migrationPath = path.join(__dirname, 'migrations', file);
+            const sql = fs.readFileSync(migrationPath, 'utf8');
+
+            console.log(`🔄 Executing migration: ${file}...`);
+            await client.query(sql);
+            console.log(`✅ ${file} executed successfully`);
+        }
 
         client.release();
         process.exit(0);

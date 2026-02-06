@@ -7,10 +7,31 @@ import { Button } from '@/components/ui/button';
 import { ShoppingBag, MapPin, CreditCard, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { api } from '@/config/api';
+import { useState, useEffect } from 'react';
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const [orderCount, setOrderCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchOrderCount = async () => {
+      try {
+        const response = await api.orders.getAll();
+        if (response.success && response.data) {
+          const orders = Array.isArray(response.data) ? response.data : [];
+          setOrderCount(orders.length);
+        } else {
+          setOrderCount(0);
+        }
+      } catch {
+        setOrderCount(0);
+      }
+    };
+
+    fetchOrderCount();
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -33,7 +54,9 @@ export default function DashboardPage() {
                 <ShoppingBag className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">0</div>
+                <div className="text-2xl font-bold">
+                  {orderCount === null ? '...' : orderCount}
+                </div>
                 <p className="text-xs text-gray-600">All time orders</p>
               </CardContent>
             </Card>

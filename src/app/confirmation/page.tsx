@@ -1,62 +1,13 @@
 'use client';
 
-import OrderSummary from '@/components/OrderSummary';
 import { Button } from '@/components/ui/button';
-import { useCart } from '@/hooks/useCart';
 import { CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useMemo } from 'react';
-import { restaurants } from '@/lib/data';
 
 export default function ConfirmationPage() {
-  const { clearCart, cartItems } = useCart();
-
-  // Calculate delivery time based on restaurants in cart
-  const deliveryTime = useMemo(() => {
-    if (cartItems.length === 0) return 0;
-    
-    const restaurantIds = new Set<string>();
-    cartItems.forEach(item => {
-      const restaurantId = item.id.split('-')[0];
-      restaurantIds.add(restaurantId);
-    });
-    
-    const deliveryTimes = Array.from(restaurantIds).map(id => {
-      const restaurant = restaurants.find(r => r.id === id);
-      return restaurant?.deliveryTime || 0;
-    });
-    
-    return Math.max(...deliveryTimes, 0);
-  }, [cartItems]);
-
-  // If the user navigates here directly without items, redirect them.
-  // We don't clear cart immediately to allow refresh.
-  useEffect(() => {
-    if(cartItems.length === 0) {
-      // router.push('/'); // This would cause a loop on clearCart. Best to just show a message.
-    }
-  }, [cartItems.length]);
-  
-
-  const handleFinish = () => {
-    clearCart();
-  };
-
-  if (cartItems.length === 0) {
-    return (
-       <div className="container mx-auto px-4 py-8 text-center">
-         <div className="max-w-md mx-auto p-8">
-            <h1 className="font-headline text-3xl mb-2">No Order Found</h1>
-            <p className="text-muted-foreground mb-6">
-              It looks like you haven't placed an order yet.
-            </p>
-            <Button asChild>
-              <Link href="/">Browse Restaurants</Link>
-            </Button>
-          </div>
-      </div>
-    )
-  }
+  // The checkout page clears the cart and creates the order before navigating here
+  // (see src/app/checkout/page.tsx:107-109).
+  // This page is now a static success screen — it does not depend on cart contents.
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -65,13 +16,16 @@ export default function ConfirmationPage() {
         <h1 className="font-headline text-4xl font-bold tracking-tight mb-4">
           Order Confirmed!
         </h1>
-        <p className="text-lg text-muted-foreground mb-8">
-          Thank you for your order. Your food is on its way and will arrive in approximately {deliveryTime} {deliveryTime === 1 ? 'minute' : 'minutes'}.
+        <p className="text-lg text-muted-foreground mb-4">
+          Thank you for your order. Your food is being prepared and will be on its way soon.
         </p>
-        <div className="text-left mb-8">
-          <OrderSummary />
-        </div>
-        <Button asChild size="lg" onClick={handleFinish}>
+        <p className="text-sm text-muted-foreground mb-8">
+          You can track your order status on the{' '}
+          <Link href="/orders" className="underline font-semibold text-emerald-600">
+            Orders page
+          </Link>.
+        </p>
+        <Button asChild size="lg">
           <Link href="/">Back to Restaurants</Link>
         </Button>
       </div>
