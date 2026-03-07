@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import type { MenuItem } from '@/lib/data';
-import { api, getAuthToken } from '@/config/api';
+import { api, getAuthToken, type OrderItem } from '@/config/api';
 
 export type CartItem = MenuItem & {
   quantity: number;
@@ -33,7 +33,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         try {
           const response = await api.cart.get();
           if (response.success && response.data?.items && response.data.items.length > 0) {
-            setCartItems(response.data.items);
+            const items = response.data.items as (OrderItem & { image?: string; imageHint?: string })[];
+            setCartItems(items.map((item) => ({
+              id: String(item.id ?? item.name),
+              name: item.name,
+              description: item.description ?? '',
+              price: item.price,
+              image: item.image ?? '',
+              imageHint: item.imageHint ?? item.name,
+              quantity: item.quantity ?? 1,
+            })));
             setIsInitialLoad(false);
             return;
           }
@@ -47,8 +56,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         if (storedCart) {
           setCartItems(JSON.parse(storedCart));
         }
-      } catch (error) {
-        console.error("Failed to parse cart from localStorage", error);
+      } catch {
         localStorage.removeItem('quickbite-cart');
       }
 
@@ -63,8 +71,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     // Always persist to localStorage
     try {
       localStorage.setItem('quickbite-cart', JSON.stringify(items));
-    } catch (error) {
-      console.error("Failed to save cart to localStorage", error);
+    } catch {
+      // localStorage may be unavailable (private browsing, full quota)
     }
 
     // Debounced sync to server if authenticated

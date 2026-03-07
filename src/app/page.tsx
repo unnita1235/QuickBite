@@ -8,6 +8,18 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
+/** Shape of one search result from the API (POST /api/search). */
+interface SearchResultRow {
+  id: number;
+  name: string;
+  description: string;
+  cuisine_type?: string;
+  cuisine?: string;
+  rating: number | string;
+  delivery_time?: number;
+  image_url?: string;
+}
+
 export default function Home() {
   const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Restaurant[]>([]);
@@ -35,12 +47,12 @@ export default function Home() {
           const data = await response.json();
 
           // Map backend response to frontend Restaurant interface
-          const mappedResults = data.results.map((r: any) => ({
+          const mappedResults = data.results.map((r: SearchResultRow) => ({
             id: r.id.toString(),
             name: r.name,
             description: r.description,
             cuisine: r.cuisine_type || r.cuisine || 'Other',
-            rating: parseFloat(r.rating),
+            rating: parseFloat(String(r.rating)),
             deliveryTime: r.delivery_time || 30,
             image: r.image_url || 'https://picsum.photos/seed/101/600/400',
             imageHint: r.name,
@@ -49,8 +61,7 @@ export default function Home() {
 
           setSearchResults(mappedResults);
           setSearchError(false);
-        } catch (error) {
-          console.error('Failed to search:', error);
+        } catch {
           setSearchError(true);
           setSearchResults([]);
         } finally {
@@ -104,7 +115,7 @@ export default function Home() {
 
       {query.length > 2 && !searchError && (
         <h2 className="font-headline text-3xl font-semibold tracking-tight mb-6">
-          Results for "{query}"
+          Results for &quot;{query}&quot;
         </h2>
       )}
 

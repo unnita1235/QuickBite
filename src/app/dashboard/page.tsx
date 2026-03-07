@@ -62,22 +62,22 @@ export default function DashboardPage() {
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Delivery Addresses</CardTitle>
+                <CardTitle className="text-sm font-medium">Account Email</CardTitle>
                 <MapPin className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">1</div>
-                <p className="text-xs text-gray-600">Saved addresses</p>
+                <div className="text-sm font-bold truncate">{user?.email || '—'}</div>
+                <p className="text-xs text-gray-600">Registered email</p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Account Type</CardTitle>
+                <CardTitle className="text-sm font-medium">Member Since</CardTitle>
                 <CreditCard className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">User</div>
-                <p className="text-xs text-gray-600">Standard account</p>
+                <div className="text-2xl font-bold">{new Date().getFullYear()}</div>
+                <p className="text-xs text-gray-600">Welcome to QuickBite</p>
               </CardContent>
             </Card>
           </div>

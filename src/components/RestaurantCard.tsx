@@ -26,7 +26,7 @@ const RestaurantCard = memo(function RestaurantCard({ restaurant, isRecommended 
             width={600}
             height={400}
             className="w-full h-48 object-cover"
-            data-ai-hint={restaurant.imageHint}
+
           />
           {isRecommended && (
              <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground">AI Pick</Badge>

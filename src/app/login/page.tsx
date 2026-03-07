@@ -37,7 +37,8 @@ export default function LoginPage() {
 
     const result = await login(email, password);
     if (!result.success) {
-setError('Login failed');    }
+      setError(result.error || 'Login failed');
+    }
     setIsSubmitting(false);
   };
 
@@ -49,7 +50,8 @@ setError('Login failed');    }
           <CardDescription>Sign in to your QuickBite account</CardDescription>
         </CardHeader>
         <CardContent>
-{error && (            <Alert variant="destructive" className="mb-4">
+          {error && (
+            <Alert variant="destructive" className="mb-4">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
@@ -68,7 +70,7 @@ setError('Login failed');    }
             </Button>
           </form>
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">Don't have an account? <Link href="/register" className="font-medium text-primary hover:underline">Create one</Link></p>
+            <p className="text-sm text-gray-600">Don&apos;t have an account? <Link href="/register" className="font-medium text-primary hover:underline">Create one</Link></p>
           </div>
         </CardContent>
       </Card>

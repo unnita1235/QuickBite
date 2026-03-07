@@ -3,6 +3,7 @@
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -33,6 +34,7 @@ export default function CartSheet() {
       <SheetContent className="flex flex-col">
         <SheetHeader>
           <SheetTitle className="font-headline text-2xl">Your Cart</SheetTitle>
+          <SheetDescription className="sr-only">Review items in your shopping cart</SheetDescription>
         </SheetHeader>
         {cartItems.length > 0 ? (
           <>

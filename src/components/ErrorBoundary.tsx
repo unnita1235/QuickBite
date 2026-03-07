@@ -25,8 +25,10 @@ export class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  componentDidCatch(_error: Error, _errorInfo: ErrorInfo) {
+    // Error is captured in state and shown in the UI fallback.
+    // In production, send to an error reporting service here.
   }
 
   render() {

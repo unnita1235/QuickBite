@@ -95,16 +95,36 @@ export default function CheckoutPage() {
         }
       );
 
-      const results = await Promise.all(orderPromises);
+      const settled = await Promise.allSettled(orderPromises);
 
-      const failedOrder = results.find(r => !r.success);
-      if (failedOrder) {
-        setError(failedOrder.error || 'One or more orders could not be submitted. Please try again.');
+      const failed = settled.filter(
+        (r): r is PromiseRejectedResult => r.status === 'rejected'
+      );
+      const rejectedApi = settled.filter(
+        (r): r is PromiseFulfilledResult<Awaited<ReturnType<typeof api.orders.create>>> =>
+          r.status === 'fulfilled' && !r.value.success
+      );
+
+      const totalFailed = failed.length + rejectedApi.length;
+      const totalSucceeded = settled.length - totalFailed;
+
+      if (totalFailed > 0 && totalSucceeded === 0) {
+        const firstError = rejectedApi[0]?.value.error || failed[0]?.reason?.message;
+        setError(firstError || 'Your order could not be submitted. Please try again.');
         setIsSubmitting(false);
         return;
       }
 
-      // All orders succeeded — clear the cart, then navigate to confirmation.
+      if (totalFailed > 0 && totalSucceeded > 0) {
+        clearCart();
+        setError(
+          `${totalSucceeded} of ${settled.length} orders were placed successfully. ` +
+          `${totalFailed} failed — please check your orders page.`
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
       clearCart();
       router.push('/confirmation');
     } catch (err) {

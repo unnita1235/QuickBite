@@ -76,7 +76,7 @@ export default function RegisterPage() {
       setSuccess(true);
       setTimeout(() => router.push('/dashboard'), 1500);
     } else {
-      setError('Registration failed');
+      setError(result.error || 'Registration failed');
     }
 
     setIsSubmitting(false);

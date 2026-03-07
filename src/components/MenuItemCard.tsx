@@ -42,7 +42,7 @@ const MenuItemCard = memo(function MenuItemCard({ item }: MenuItemCardProps) {
             alt={item.name}
             fill
             className="object-cover"
-            data-ai-hint={item.imageHint}
+
           />
         </div>
         <Button size="sm" variant="outline" onClick={handleAddToCart}>

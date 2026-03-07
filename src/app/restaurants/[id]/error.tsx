@@ -12,7 +12,7 @@ export default function RestaurantError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error('Restaurant page error:', error);
+    void error;
   }, [error]);
 
   return (

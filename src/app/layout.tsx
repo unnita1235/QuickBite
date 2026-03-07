@@ -1,10 +1,14 @@
 import type { Metadata, Viewport } from 'next';
+import { Alegreya, Belleza } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { CartProvider } from '@/hooks/useCart';
 import Header from '@/components/Header';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AuthProvider } from '@/context/AuthContext';
+
+const alegreya = Alegreya({ subsets: ['latin'], variable: '--font-alegreya' });
+const belleza = Belleza({ weight: '400', subsets: ['latin'], variable: '--font-belleza' });
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -56,24 +60,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..900&family=Belleza&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased">
+      <body className={`${alegreya.variable} ${belleza.variable} font-body antialiased`}>
         <ErrorBoundary>
-                <AuthProvider>
-          <CartProvider>
-            <div className="relative flex min-h-screen flex-col">
-              <Header />
-              <main className="flex-1">{children}</main>
-            </div>
-            <Toaster />
-
-                        </CartProvider>
-                      </AuthProvider>
-       </ErrorBoundary>
+          <AuthProvider>
+            <CartProvider>
+              <div className="relative flex min-h-screen flex-col">
+                <Header />
+                <main className="flex-1">{children}</main>
+              </div>
+              <Toaster />
+            </CartProvider>
+          </AuthProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

@@ -10,13 +10,18 @@ interface User {
   name: string;
 }
 
+interface AuthResult {
+  success: boolean;
+  error?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<{success: boolean}>;
-  register: (email: string, password: string, name: string) => Promise<{success: boolean}>;
+  login: (email: string, password: string) => Promise<AuthResult>;
+  register: (email: string, password: string, name: string) => Promise<AuthResult>;
   logout: () => void;
 }
 
@@ -41,19 +46,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<AuthResult> => {
     try {
       const response = await api.auth.login(email, password);
 
       if (!response.success) {
-        throw new Error(response.error || 'Login failed');
+        return { success: false, error: response.error || 'Login failed' };
       }
 
       const loginToken = response.data?.token;
       const loginUser = response.data?.user;
 
       if (!loginToken || !loginUser) {
-        throw new Error('Invalid response from server');
+        return { success: false, error: 'Invalid response from server' };
       }
 
       setToken(loginToken);
@@ -62,25 +67,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       router.push('/dashboard');
       return { success: true };
     } catch (error) {
-      console.error('Login error:', error);
-      return { success: false };
+      const message = error instanceof Error ? error.message : 'Login failed';
+      return { success: false, error: message };
     }
   };
 
-  const register = async (email: string, password: string, name: string) => {
+  const register = async (email: string, password: string, name: string): Promise<AuthResult> => {
     try {
       const response = await api.auth.register(email, password, name);
 
       if (!response.success) {
-        throw new Error(response.error || 'Registration failed');
+        return { success: false, error: response.error || 'Registration failed' };
       }
 
-      // Auto-login after registration
-      await login(email, password);
+      const loginResult = await login(email, password);
+      if (!loginResult.success) {
+        return { success: false, error: loginResult.error || 'Account created but login failed. Please sign in manually.' };
+      }
       return { success: true };
     } catch (error) {
-      console.error('Registration error:', error);
-      return { success: false };
+      const message = error instanceof Error ? error.message : 'Registration failed';
+      return { success: false, error: message };
     }
   };
 
