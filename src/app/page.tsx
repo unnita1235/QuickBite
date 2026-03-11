@@ -54,7 +54,7 @@ export default function Home() {
             cuisine: r.cuisine_type || r.cuisine || 'Other',
             rating: parseFloat(String(r.rating)),
             deliveryTime: r.delivery_time || 30,
-            image: r.image_url || 'https://picsum.photos/seed/101/600/400',
+            image: r.image_url || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=400&fit=crop',
             imageHint: r.name,
             menu: []
           }));

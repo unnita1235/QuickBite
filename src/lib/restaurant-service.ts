@@ -37,7 +37,7 @@ function mapApiRestaurant(r: ApiRestaurant): Restaurant {
     cuisine: r.cuisine_type || 'Other',
     rating: parseFloat(String(r.rating)),
     deliveryTime: r.delivery_time || 30,
-    image: r.image_url || `https://picsum.photos/seed/${r.id}/600/400`,
+    image: r.image_url || `https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=400&fit=crop`,
     imageHint: r.name.toLowerCase(),
     menu: (r.menus || []).map(m => ({
       name: m.name,
@@ -46,7 +46,7 @@ function mapApiRestaurant(r: ApiRestaurant): Restaurant {
         name: item.name,
         description: item.description || '',
         price: item.price,
-        image: item.image || `https://picsum.photos/seed/${item.id}/200/200`,
+        image: item.image || `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop`,
         imageHint: item.name.toLowerCase(),
       })),
     })),
