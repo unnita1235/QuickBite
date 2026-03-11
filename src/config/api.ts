@@ -90,14 +90,14 @@ const fetchApi = async <T,>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers,
+    ...(options.headers as Record<string, string>),
   };
 
   const token = getAuthToken();
   if (token) {
-    (headers as any)['Authorization'] = `Bearer ${token}`;
+    headers['Authorization'] = `Bearer ${token}`;
   }
 
   try {
@@ -140,15 +140,8 @@ export const api = {
         body: JSON.stringify({ email, password }),
       });
 
-      // Server returns token/user at top level, map to data field
-      const raw = response as any;
-      if (response.success && (response.data?.token || raw.token)) {
-        const token = response.data?.token || raw.token;
-        const user = response.data?.user || raw.user;
-        setAuthToken(token);
-        if (!response.data) {
-          response.data = { token, user } as AuthResponse;
-        }
+      if (response.success && response.data?.token) {
+        setAuthToken(response.data.token);
       }
 
       return response;
@@ -168,7 +161,7 @@ export const api = {
   // Restaurant endpoints
   restaurants: {
     getAll: async (page: number = 0, limit: number = 20) => {
-      return fetchApi<{ data: Restaurant[]; pagination: any }>(
+      return fetchApi<{ data: Restaurant[]; pagination: { total?: number; limit?: number; offset?: number } }>(
         `/restaurants?page=${page}&limit=${limit}`,
         { method: 'GET' }
       );
@@ -229,13 +222,13 @@ export const api = {
   // Cart endpoints
   cart: {
     get: async () => {
-      return fetchApi<{ items: any[]; updated_at: string | null }>('/cart', {
+      return fetchApi<{ items: OrderItem[]; updated_at: string | null }>('/cart', {
         method: 'GET',
       });
     },
 
-    save: async (items: any[]) => {
-      return fetchApi<{ items: any[]; updated_at: string }>('/cart', {
+    save: async (items: OrderItem[]) => {
+      return fetchApi<{ items: OrderItem[]; updated_at: string }>('/cart', {
         method: 'PUT',
         body: JSON.stringify({ items }),
       });

@@ -50,6 +50,10 @@ router.get('/', verifyToken, async (req, res) => {
 
 // GET /api/orders/:id
 router.get('/:id', verifyToken, async (req, res) => {
+  if (isNaN(parseInt(req.params.id))) {
+    return res.status(400).json({ success: false, error: 'Invalid order ID' });
+  }
+
   try {
     const result = await pool.query(
       'SELECT o.*, r.name as restaurant_name FROM orders o LEFT JOIN restaurants r ON o.restaurant_id = r.id WHERE o.id = $1 AND o.user_id = $2',
@@ -71,6 +75,10 @@ router.get('/:id', verifyToken, async (req, res) => {
 
 // PUT /api/orders/:id/status
 router.put('/:id/status', verifyToken, async (req, res) => {
+  if (isNaN(parseInt(req.params.id))) {
+    return res.status(400).json({ success: false, error: 'Invalid order ID' });
+  }
+
   const { status } = req.body;
   const orderId = req.params.id;
   const userId = req.userId;

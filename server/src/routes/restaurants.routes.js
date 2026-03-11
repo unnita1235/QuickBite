@@ -34,6 +34,10 @@ router.get('/', async (req, res) => {
 
 // GET /api/restaurants/:id
 router.get('/:id', async (req, res) => {
+  if (isNaN(parseInt(req.params.id))) {
+    return res.status(400).json({ success: false, error: 'Invalid restaurant ID' });
+  }
+
   try {
     const restaurantResult = await pool.query(
       'SELECT * FROM restaurants WHERE id = $1',
@@ -194,67 +198,6 @@ router.delete('/:restaurantId/menus/:menuId', verifyToken, async (req, res) => {
     res.json({
       success: true,
       message: 'Menu deleted successfully'
-    });
-  } catch (error) {
-    handleError(res, error);
-  }
-});
-
-// POST /api/search
-router.post('/search', async (req, res) => {
-  const { query, cuisineType, minRating, maxDeliveryTime, limit = 10, offset = 0 } = req.body;
-
-  if (!query || query.trim().length === 0) {
-    return res.status(400).json({
-      success: false,
-      error: 'Search query required'
-    });
-  }
-
-  const sanitizedQuery = sanitizeString(query);
-  const limitValue = Math.min(parseInt(limit) || 10, 100);
-  const offsetValue = parseInt(offset) || 0;
-
-  try {
-    let sqlQuery = 'SELECT * FROM restaurants WHERE (name ILIKE $1 OR description ILIKE $1 OR cuisine_type ILIKE $1)';
-    const params = [`%${sanitizedQuery}%`];
-    let paramIndex = 2;
-
-    if (cuisineType) {
-      sqlQuery += ` AND cuisine_type ILIKE $${paramIndex}`;
-      params.push(`%${cuisineType}%`);
-      paramIndex++;
-    }
-
-    if (minRating) {
-      sqlQuery += ` AND rating >= $${paramIndex}`;
-      params.push(minRating);
-      paramIndex++;
-    }
-
-    if (maxDeliveryTime) {
-      sqlQuery += ` AND delivery_time <= $${paramIndex}`;
-      params.push(maxDeliveryTime);
-      paramIndex++;
-    }
-
-    sqlQuery += ` AND is_active = true ORDER BY rating DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-    params.push(limitValue, offsetValue);
-
-    const result = await pool.query(sqlQuery, params);
-    const countResult = await pool.query(
-      'SELECT COUNT(*) FROM restaurants WHERE (name ILIKE $1 OR description ILIKE $1 OR cuisine_type ILIKE $1) AND is_active = true',
-      [`%${sanitizedQuery}%`]
-    );
-
-    res.json({
-      success: true,
-      results: result.rows,
-      pagination: {
-        total: parseInt(countResult.rows[0].count),
-        limit: limitValue,
-        offset: offsetValue
-      }
     });
   } catch (error) {
     handleError(res, error);

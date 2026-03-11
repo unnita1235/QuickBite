@@ -1,14 +1,8 @@
 -- QuickBite Database Migrations
 -- Initial database schema setup
 
--- Drop existing tables if they exist (for fresh migration)
-DROP TABLE IF EXISTS menus CASCADE;
-DROP TABLE IF EXISTS orders CASCADE;
-DROP TABLE IF EXISTS restaurants CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
-
 -- Create users table
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   email VARCHAR(255) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
@@ -20,10 +14,10 @@ CREATE TABLE users (
 );
 
 -- Create index for email lookups
-CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 
 -- Create restaurants table
-CREATE TABLE restaurants (
+CREATE TABLE IF NOT EXISTS restaurants (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   description TEXT,
@@ -41,10 +35,10 @@ CREATE TABLE restaurants (
 );
 
 -- Create index for active restaurants
-CREATE INDEX idx_restaurants_active ON restaurants(is_active);
+CREATE INDEX IF NOT EXISTS idx_restaurants_active ON restaurants(is_active);
 
 -- Create menus table
-CREATE TABLE menus (
+CREATE TABLE IF NOT EXISTS menus (
   id SERIAL PRIMARY KEY,
   restaurant_id INT NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
   name VARCHAR(255) NOT NULL,
@@ -54,10 +48,10 @@ CREATE TABLE menus (
 );
 
 -- Create index for menus
-CREATE INDEX idx_menus_restaurant_id ON menus(restaurant_id);
+CREATE INDEX IF NOT EXISTS idx_menus_restaurant_id ON menus(restaurant_id);
 
 -- Create orders table
-CREATE TABLE orders (
+CREATE TABLE IF NOT EXISTS orders (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   restaurant_id INT NOT NULL REFERENCES restaurants(id),
@@ -72,10 +66,10 @@ CREATE TABLE orders (
 );
 
 -- Create indexes for order queries
-CREATE INDEX idx_orders_user_id ON orders(user_id);
-CREATE INDEX idx_orders_restaurant_id ON orders(restaurant_id);
-CREATE INDEX idx_orders_status ON orders(status);
-CREATE INDEX idx_orders_created_at ON orders(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_orders_restaurant_id ON orders(restaurant_id);
+CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
+CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at DESC);
 
 -- Insert sample restaurants
 INSERT INTO restaurants (name, description, cuisine_type, rating, delivery_time, delivery_charge, min_order, image_url, address, phone, is_active) VALUES
@@ -86,9 +80,5 @@ INSERT INTO restaurants (name, description, cuisine_type, rating, delivery_time,
 ('Pizza Place', 'Wood-fired pizza and fresh salads', 'Italian', 4.7, 30, 2.99, 18.00, 'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=500', '654 Maple Dr', '555-0105', true),
 ('Curry Kitchen', 'Spicy Indian curries and breads', 'Indian', 4.4, 40, 3.49, 16.00, 'https://images.unsplash.com/photo-1585238341710-4b9c5c7c5d5e?w=500', '987 Cedar Ln', '555-0106', true);
 
--- Create sample user for testing
-INSERT INTO users (email, password_hash, first_name, last_name, phone) VALUES
-('test@example.com', '$2b$10$examplehashedpassword', 'Test', 'User', '555-0001');
-
--- Commit transaction
-COMMIT;
+-- Test users should be created via the API (POST /api/auth/register)
+-- to ensure proper bcrypt password hashing.

@@ -45,9 +45,10 @@ router.post('/register', authLimiter, async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
-      token,
-      user: result.rows[0]
+      data: {
+        token,
+        user: result.rows[0]
+      }
     });
   } catch (error) {
     handleError(res, error, 400);
@@ -87,11 +88,13 @@ router.post('/login', authLimiter, async (req, res) => {
 
     res.json({
       success: true,
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name
+      data: {
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name
+        }
       }
     });
   } catch (error) {

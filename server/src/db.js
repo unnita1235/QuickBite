@@ -7,9 +7,13 @@ if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL environment variable is required');
 }
 
+const useSSL = process.env.DATABASE_URL?.includes('neon.tech') ||
+  process.env.DATABASE_URL?.includes('sslmode=require') ||
+  process.env.NODE_ENV === 'production';
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? true : false,
+  ssl: useSSL ? { rejectUnauthorized: false } : false,
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,

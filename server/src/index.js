@@ -33,8 +33,22 @@ const globalLimiter = rateLimit({
 
 app.use(globalLimiter);
 app.use(express.json({ limit: '10mb' }));
+const allowedOrigins = (process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'http://localhost:3000')
+  .split(',')
+  .map(o => o.trim());
+
+if (process.env.NODE_ENV !== 'production') {
+  allowedOrigins.push('http://localhost:9002', 'http://localhost:3000', 'http://localhost:5173');
+}
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    }
+  },
   credentials: true
 }));
 
