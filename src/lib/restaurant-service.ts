@@ -1,6 +1,6 @@
 import { restaurants as staticRestaurants, type Restaurant } from './data';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://quickbite-backend-zsdz.onrender.com/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 interface ApiRestaurant {
   id: number;
