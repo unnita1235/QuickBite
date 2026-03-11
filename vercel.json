@@ -3,13 +3,11 @@
   "buildCommand": "next build",
   "installCommand": "npm install",
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://quickbite-backend-zsdz.onrender.com/api",
-    "NEXT_PUBLIC_WS_URL": "wss://quickbite-backend-zsdz.onrender.com"
+    "NEXT_PUBLIC_API_URL": "https://quickbite-backend-zsdz.onrender.com/api"
   },
   "build": {
     "env": {
-      "NEXT_PUBLIC_API_URL": "https://quickbite-backend-zsdz.onrender.com/api",
-      "NEXT_PUBLIC_WS_URL": "wss://quickbite-backend-zsdz.onrender.com"
+      "NEXT_PUBLIC_API_URL": "https://quickbite-backend-zsdz.onrender.com/api"
     }
   }
 }
