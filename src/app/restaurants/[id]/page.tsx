@@ -60,7 +60,7 @@ export default async function RestaurantPage({ params }: RestaurantPageProps) {
                      <span className='hidden sm:inline'>Delivery</span>
                 </div>
             </div>
-          <MenuList menu={restaurant.menu} />
+          <MenuList menu={restaurant.menu} restaurantId={restaurant.id} />
         </div>
       </div>
     </div>

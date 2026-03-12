@@ -4,24 +4,21 @@ import Image from 'next/image';
 import { memo } from 'react';
 import { Button } from './ui/button';
 import { useCart } from '@/hooks/useCart';
-import type { MenuItem } from '@/lib/data';
+import type { MenuItem } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { PlusCircle } from 'lucide-react';
 
 interface MenuItemCardProps {
   item: MenuItem;
+  restaurantId?: string;
 }
 
-/**
- * MenuItemCard component displays a menu item with add to cart functionality.
- * Memoized to prevent unnecessary re-renders when menu list updates.
- */
-const MenuItemCard = memo(function MenuItemCard({ item }: MenuItemCardProps) {
+const MenuItemCard = memo(function MenuItemCard({ item, restaurantId }: MenuItemCardProps) {
   const { addToCart } = useCart();
   const { toast } = useToast();
 
   const handleAddToCart = () => {
-    addToCart(item);
+    addToCart(item, restaurantId);
     toast({
       title: 'Added to cart!',
       description: `${item.name} has been added to your cart.`,

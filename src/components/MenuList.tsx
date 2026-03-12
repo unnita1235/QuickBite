@@ -1,13 +1,14 @@
 'use client';
 
-import type { MenuCategory } from '@/lib/data';
+import type { MenuCategory } from '@/types';
 import MenuItemCard from './MenuItemCard';
 
 interface MenuListProps {
   menu: MenuCategory[];
+  restaurantId?: string;
 }
 
-export default function MenuList({ menu }: MenuListProps) {
+export default function MenuList({ menu, restaurantId }: MenuListProps) {
   return (
     <div className="space-y-8">
       {menu.map((category) => (
@@ -17,7 +18,7 @@ export default function MenuList({ menu }: MenuListProps) {
           </h2>
           <div className="flex flex-col">
             {category.items.map((item) => (
-              <MenuItemCard key={item.id} item={item} />
+              <MenuItemCard key={item.id} item={item} restaurantId={restaurantId} />
             ))}
           </div>
         </div>

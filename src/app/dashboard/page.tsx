@@ -4,16 +4,22 @@ import { useAuth } from '@/context/AuthContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ShoppingBag, MapPin, CreditCard, LogOut } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ShoppingBag, MapPin, CreditCard, LogOut, User } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api } from '@/config/api';
+import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
   const [orderCount, setOrderCount] = useState<number | null>(null);
+  const [profile, setProfile] = useState({ firstName: '', lastName: '', phone: '', email: '' });
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileSaving, setProfileSaving] = useState(false);
 
   useEffect(() => {
     const fetchOrderCount = async () => {
@@ -33,9 +39,80 @@ export default function DashboardPage() {
     fetchOrderCount();
   }, []);
 
-  const handleLogout = async () => {
-    await logout();
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const response = await api.users.getProfile();
+        if (response.success && response.data) {
+          const d = response.data;
+          setProfile({
+            firstName: d.name ?? '',
+            lastName: d.last_name ?? '',
+            phone: d.phone ?? '',
+            email: d.email ?? '',
+          });
+        } else if (user) {
+          setProfile({
+            firstName: user.name ?? '',
+            lastName: user.last_name ?? '',
+            phone: user.phone ?? '',
+            email: user.email ?? '',
+          });
+        }
+      } catch {
+        if (user) {
+          setProfile({
+            firstName: user.name ?? '',
+            lastName: user.last_name ?? '',
+            phone: user.phone ?? '',
+            email: user.email ?? '',
+          });
+        }
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, [user]);
+
+  const handleLogout = () => {
+    logout();
     router.push('/login');
+  };
+
+  const handleProfileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setProfileSaving(true);
+    try {
+      const response = await api.users.updateProfile(
+        profile.firstName,
+        profile.lastName,
+        profile.phone,
+        profile.email
+      );
+      if (response.success) {
+        await refreshUser();
+        toast({
+          title: 'Profile updated',
+          description: 'Your profile has been saved.',
+        });
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Update failed',
+          description: response.error ?? 'Could not update profile.',
+        });
+      }
+    } catch {
+      toast({
+        variant: 'destructive',
+        title: 'Update failed',
+        description: 'Something went wrong. Please try again.',
+      });
+    } finally {
+      setProfileSaving(false);
+    }
   };
 
   return (
@@ -76,11 +153,85 @@ export default function DashboardPage() {
                 <CreditCard className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{new Date().getFullYear()}</div>
+                <div className="text-2xl font-bold">
+                  {user?.created_at
+                    ? new Date(user.created_at).getFullYear()
+                    : new Date().getFullYear()}
+                </div>
                 <p className="text-xs text-gray-600">Welcome to QuickBite</p>
               </CardContent>
             </Card>
           </div>
+
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" /> Edit Profile
+              </CardTitle>
+              <CardDescription>Update your name, phone, and email</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {profileLoading ? (
+                <p className="text-sm text-muted-foreground">Loading profile...</p>
+              ) : (
+                <form onSubmit={handleProfileSubmit} className="grid gap-4 max-w-md">
+                  <div>
+                    <label htmlFor="firstName" className="text-sm font-medium">
+                      First name
+                    </label>
+                    <Input
+                      id="firstName"
+                      value={profile.firstName}
+                      onChange={(e) => setProfile((p) => ({ ...p, firstName: e.target.value }))}
+                      className="mt-1"
+                      placeholder="First name"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="lastName" className="text-sm font-medium">
+                      Last name
+                    </label>
+                    <Input
+                      id="lastName"
+                      value={profile.lastName}
+                      onChange={(e) => setProfile((p) => ({ ...p, lastName: e.target.value }))}
+                      className="mt-1"
+                      placeholder="Last name"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="phone" className="text-sm font-medium">
+                      Phone
+                    </label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={profile.phone}
+                      onChange={(e) => setProfile((p) => ({ ...p, phone: e.target.value }))}
+                      className="mt-1"
+                      placeholder="Phone (optional)"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="text-sm font-medium">
+                      Email
+                    </label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={profile.email}
+                      onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))}
+                      className="mt-1"
+                      placeholder="Email"
+                    />
+                  </div>
+                  <Button type="submit" disabled={profileSaving}>
+                    {profileSaving ? 'Saving...' : 'Save profile'}
+                  </Button>
+                </form>
+              )}
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader>

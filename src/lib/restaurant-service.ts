@@ -1,32 +1,7 @@
-import { restaurants as staticRestaurants, type Restaurant } from './data';
+import { restaurants as staticRestaurants } from './data';
+import type { Restaurant, ApiRestaurant } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-
-interface ApiRestaurant {
-  id: number;
-  name: string;
-  description: string;
-  cuisine_type: string;
-  rating: number;
-  delivery_time: number;
-  image_url?: string;
-  address?: string;
-  menus?: ApiMenu[];
-}
-
-interface ApiMenu {
-  id: number;
-  name: string;
-  items: ApiMenuItem[];
-}
-
-interface ApiMenuItem {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  image?: string;
-}
 
 // Maps a backend restaurant to the frontend Restaurant interface
 function mapApiRestaurant(r: ApiRestaurant): Restaurant {
@@ -61,7 +36,7 @@ export async function getRestaurants(): Promise<Restaurant[]> {
     const response = await fetch(`${API_BASE_URL}/restaurants?limit=50`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
 
     if (!response.ok) throw new Error('API unavailable');

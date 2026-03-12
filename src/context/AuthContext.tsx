@@ -3,12 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, getAuthToken } from '@/config/api';
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-}
+import type { User } from '@/types';
 
 interface AuthResult {
   success: boolean;
@@ -23,6 +18,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<AuthResult>;
   register: (email: string, password: string, name: string) => Promise<AuthResult>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,8 +35,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const storedUser = localStorage.getItem('user');
 
     if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+      try {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      } catch {
+        localStorage.removeItem('user');
+        localStorage.removeItem('authToken');
+      }
     }
 
     setIsLoading(false);
@@ -62,7 +63,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       setToken(loginToken);
-      setUser(loginUser as unknown as User);
+      setUser(loginUser);
       localStorage.setItem('user', JSON.stringify(loginUser));
       router.push('/dashboard');
       return { success: true };
@@ -96,7 +97,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setToken(null);
     api.auth.logout();
     localStorage.removeItem('user');
-    router.push('/login');
+  };
+
+  const refreshUser = async () => {
+    const response = await api.users.getProfile();
+    if (response.success && response.data) {
+      setUser(response.data);
+      localStorage.setItem('user', JSON.stringify(response.data));
+    }
   };
 
   return (
@@ -109,6 +117,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         login,
         register,
         logout,
+        refreshUser,
       }}
     >
       {children}

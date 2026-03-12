@@ -1,16 +1,17 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
-import type { MenuItem } from '@/lib/data';
-import { api, getAuthToken, type OrderItem } from '@/config/api';
+import type { MenuItem, OrderItem } from '@/types';
+import { api, getAuthToken } from '@/config/api';
 
 export type CartItem = MenuItem & {
   quantity: number;
+  restaurantId?: string;
 };
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (item: MenuItem) => void;
+  addToCart: (item: MenuItem, restaurantId?: string) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
@@ -98,7 +99,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [cartItems, isInitialLoad, syncCart]);
 
-  const addToCart = (item: MenuItem) => {
+  const addToCart = (item: MenuItem, restaurantId?: string) => {
     setCartItems((prevItems: CartItem[]) => {
       const existingItem = prevItems.find((cartItem: CartItem) => cartItem.id === item.id);
       if (existingItem) {
@@ -108,7 +109,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             : cartItem
         );
       } else {
-        return [...prevItems, { ...item, quantity: 1 }];
+        return [...prevItems, { ...item, quantity: 1, restaurantId }];
       }
     });
   };

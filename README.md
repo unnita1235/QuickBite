@@ -1,58 +1,74 @@
-# QuickBite - AI-Powered Food Delivery Prototype
+# QuickBite - Food Delivery Platform
 
-A web app prototype demonstrating restaurant discovery with basic AI recommendations using Google Gemini. Built as a learning project to explore full-stack development.
+A full-stack food delivery web app: browse restaurants, view menus, add items to cart, register or log in, and place orders. Built with Next.js, Express, and PostgreSQL (Neon).
 
-**Live Demo:** [https://quick-bite-mu.vercel.app/](https://quick-bite-mu.vercel.app/) (Shows static restaurant list; AI search functional in local dev with API key).
+**Live Demo:** [https://quick-bite-mu.vercel.app/](https://quick-bite-mu.vercel.app/)
 
 ## Overview
-QuickBite is an entry-level prototype for a food delivery platform. It features a static list of 6 restaurants with menus, AI-based search for recommendations (e.g., query "spicy noodles" to match descriptions), and a basic cart system using localStorage. Data is hardcoded in src/lib/data.ts, making it suitable for demos but not real use. The project highlights modern web practices but remains incomplete, with planned features like authentication and payments not implemented.
+
+QuickBite is a food delivery platform with a Next.js frontend and an Express backend. Restaurants and menus are stored in PostgreSQL (Neon). The app supports search via the backend API, cart management (in-memory with optional backend sync), user registration and login (JWT), and order placement with delivery address and notes.
 
 ## Key Features
-- **Restaurant Browsing:** View hardcoded restaurants with cuisine, ratings (4.2-4.9), descriptions, and delivery estimates (20-45 min).
-- **AI Recommendations:** Uses Google Gemini 2.5 Flash via Genkit to suggest matches based on query and static data; basic but operational for simple inputs.
-- **Cart Management:** Add/remove items, update quantities; persists in browser storage.
-- **Responsive UI:** Mobile-friendly design with Tailwind CSS and shadcn/ui components.
-- **Testing:** 80+ Vitest tests with claimed 100% coverage for core functions.
 
-Limitations: No database, user accounts, or real backend persistence; AI limited to static analysis without learning or scalability.
+- **Restaurant Browsing:** List and detail pages with cuisine, ratings, delivery time, and images (API or static fallback).
+- **Search:** Backend search by name, description, or cuisine type.
+- **Cart:** Add/remove items, update quantities; checkout with delivery address and notes.
+- **Auth:** Register and login with JWT; protected dashboard and orders pages.
+- **Orders:** Place orders and view order history.
+- **Responsive UI:** Tailwind CSS and shadcn/ui (Radix).
+- **Testing:** Vitest and React Testing Library for core components and hooks.
 
 ## Tech Stack
-- **Frontend:** Next.js 15 (App Router, SSR), React, TypeScript (strict mode), Tailwind CSS, Radix UI/shadcn/ui, Lucide icons.
-- **AI/Backend:** Google Genkit, Gemini model, Next.js Server Actions; minimal Express setup (in server/ folder but not fully integrated).
-- **Dev Tools:** Vitest + React Testing Library, ESLint, GitHub Actions for CI/CD, Vercel deployment.
-- **Dependencies:** From package.json - next@^15, typescript@^5, tailwindcss@^3, @genkit-ai/core, lucide-react, etc.
 
-## Setup Instructions
-1. Clone: `git clone https://github.com/unnita1235/QuickBite.git`
-2. Install: `npm install`
-3. Env: Copy .env.example to .env.local; add GOOGLE_GENAI_API_KEY (free from Google AI Studio).
-4. Run: `npm run dev` (localhost:3000)
-5. Test: `npm test`
+- **Frontend:** Next.js 15 (App Router), React 18, TypeScript, Tailwind CSS, shadcn/ui, Lucide icons.
+- **Backend:** Express (Node.js), JWT auth, bcrypt, express-validator, rate limiting, CORS.
+- **Database:** PostgreSQL via [Neon](https://neon.tech); migrations and seed in `server/`.
+- **Dev/Deploy:** Vitest, ESLint, GitHub Actions CI, Vercel (frontend), Render (backend).
 
-For AI to work, ensure valid API key; demo uses static fallback.
+## Setup
+
+See **[DEVELOPMENT.md](./DEVELOPMENT.md)** for detailed setup (env vars, database migrations, seed, and running frontend and backend).
+
+Quick version:
+
+1. Clone and install dependencies (root and `server/`).
+2. Copy `.env.example` to `.env` in root and in `server/`; set `NEXT_PUBLIC_API_URL`, `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN`.
+3. From `server/`: run `node run_migration.js` then `node seed.js`.
+4. Start backend: `cd server && npm run dev` (port 5000).
+5. Start frontend: `npm run dev` (port 9002).
+6. Open [http://localhost:9002](http://localhost:9002).
 
 ## Project Structure
-- **src/app:** Pages and layouts (e.g., page.tsx for home, [id]/page.tsx for details).
-- **src/actions:** Server logic (recommend.ts handles AI queries with try-catch error handling).
-- **src/components:** Reusable UI (RestaurantCard.tsx, CartSheet.tsx).
-- **src/hooks:** State management (useCart.tsx with useState/effect for localStorage).
-- **src/lib:** Data and utils (data.ts with static arrays).
-- **src/ai:** Genkit config (genkit.ts sets up model).
-- **docs:** Architecture notes, testing reports.
-- **server:** Basic Express setup (not fully connected in current build).
 
-Code Style: Modular with separation of concerns; async/await for promises; basic error logging. 158 commits show iterative fixes (e.g., backend deployment on Jan 8, 2026).
+- **src/app:** App Router pages (home, login, register, checkout, confirmation, dashboard, orders, restaurants/[id]).
+- **src/components:** UI components (Header, RestaurantCard, SearchBar, MenuList, CartSheet, OrderSummary, ProtectedRoute, ErrorBoundary) and shadcn primitives.
+- **src/context:** AuthContext for user and token state.
+- **src/hooks:** useCart, useToast.
+- **src/lib:** restaurant-service (API + static fallback), data (static restaurants), utils.
+- **src/config:** api.ts (client for backend endpoints).
+- **server:** Express API (auth, restaurants, orders, users, cart), migrations, seed.
 
-## Roadmap
-- Add authentication and user profiles.
-- Integrate Stripe for payments.
-- Implement real database (MongoDB) for dynamic data.
-- Add order tracking and admin dashboard.
-- Enhance AI with more advanced querying.
+## Docs
+
+- **[DEVELOPMENT.md](./DEVELOPMENT.md)** – Local setup and run instructions.
+- **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** – Stack, data flow, and deployment.
+- **[docs/REQUIREMENTS.md](./docs/REQUIREMENTS.md)** – Product and technical requirements (functional and non-functional).
+
+## Scripts
+
+| Command        | Description                    |
+|----------------|--------------------------------|
+| `npm run dev`  | Start Next.js (port 9002)      |
+| `npm run build`| Production build               |
+| `npm run lint` | ESLint                         |
+| `npm run typecheck` | TypeScript check         |
+| `npm test -- --run` | Run Vitest tests        |
+| `cd server && npm run dev` | Start Express API (port 5000) |
+| `cd server && npm run migrate` | Run DB migrations   |
+| `cd server && npm run seed`    | Seed database         |
 
 ## Contributions
-Fork and PR; follow CONTRIBUTING.md for guidelines. Contributors: unnita1235 (main), claude (AI-assisted docs/code).
+
+Fork and open a PR; follow [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 License: MIT
-
-*Updated: January 2026*

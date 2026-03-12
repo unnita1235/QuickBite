@@ -71,14 +71,6 @@ CREATE INDEX IF NOT EXISTS idx_orders_restaurant_id ON orders(restaurant_id);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at DESC);
 
--- Insert sample restaurants
-INSERT INTO restaurants (name, description, cuisine_type, rating, delivery_time, delivery_charge, min_order, image_url, address, phone, is_active) VALUES
-('Pasta Palace', 'Authentic Italian cuisine with fresh ingredients', 'Italian', 4.5, 35, 2.99, 15.00, 'https://images.unsplash.com/photo-1552521881-97d65e32ef12?w=500', '123 Main St', '555-0101', true),
-('Sushi Spot', 'Premium Japanese sushi and ramen', 'Japanese', 4.8, 30, 3.99, 20.00, 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=500', '456 Oak Ave', '555-0102', true),
-('Burger Barn', 'Juicy burgers and crispy fries', 'American', 4.3, 25, 2.49, 12.00, 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500', '789 Pine Rd', '555-0103', true),
-('Taco Haven', 'Authentic Mexican street food', 'Mexican', 4.6, 20, 1.99, 10.00, 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=500', '321 Elm St', '555-0104', true),
-('Pizza Place', 'Wood-fired pizza and fresh salads', 'Italian', 4.7, 30, 2.99, 18.00, 'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=500', '654 Maple Dr', '555-0105', true),
-('Curry Kitchen', 'Spicy Indian curries and breads', 'Indian', 4.4, 40, 3.49, 16.00, 'https://images.unsplash.com/photo-1585238341710-4b9c5c7c5d5e?w=500', '987 Cedar Ln', '555-0106', true);
-
+-- Sample data is inserted via seed.js (run: node seed.js)
 -- Test users should be created via the API (POST /api/auth/register)
 -- to ensure proper bcrypt password hashing.

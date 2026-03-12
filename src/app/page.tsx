@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { restaurants, type Restaurant } from '@/lib/data';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import type { Restaurant } from '@/types';
+import { getRestaurants } from '@/lib/restaurant-service';
 import RestaurantCard from '@/components/RestaurantCard';
 import SearchBar from '@/components/SearchBar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
-/** Shape of one search result from the API (POST /api/search). */
 interface SearchResultRow {
   id: number;
   name: string;
@@ -22,14 +22,41 @@ interface SearchResultRow {
 
 export default function Home() {
   const [query, setQuery] = useState('');
+  const [allRestaurants, setAllRestaurants] = useState<Restaurant[]>([]);
   const [searchResults, setSearchResults] = useState<Restaurant[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState(false);
+  const [isLoadingRestaurants, setIsLoadingRestaurants] = useState(true);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const data = await getRestaurants();
+        if (!cancelled) setAllRestaurants(data);
+      } catch {
+        // Static fallback is already handled inside getRestaurants()
+      } finally {
+        if (!cancelled) setIsLoadingRestaurants(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+
     if (query.length > 2) {
       setIsSearching(true);
       setSearchError(false);
+
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
       const handleSearch = async () => {
         try {
@@ -37,7 +64,8 @@ export default function Home() {
           const response = await fetch(`${apiUrl}/search`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query })
+            body: JSON.stringify({ query }),
+            signal: controller.signal,
           });
 
           if (!response.ok) {
@@ -45,9 +73,8 @@ export default function Home() {
           }
 
           const data = await response.json();
-
-          // Map backend response to frontend Restaurant interface
-          const mappedResults = data.results.map((r: SearchResultRow) => ({
+          const results = Array.isArray(data?.results) ? data.results : [];
+          const mappedResults = results.map((r: SearchResultRow) => ({
             id: r.id.toString(),
             name: r.name,
             description: r.description,
@@ -56,16 +83,19 @@ export default function Home() {
             deliveryTime: r.delivery_time || 30,
             image: r.image_url || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=400&fit=crop',
             imageHint: r.name,
-            menu: []
+            menu: [],
           }));
 
           setSearchResults(mappedResults);
           setSearchError(false);
-        } catch {
+        } catch (err) {
+          if (err instanceof DOMException && err.name === 'AbortError') return;
           setSearchError(true);
           setSearchResults([]);
         } finally {
-          setIsSearching(false);
+          if (!controller.signal.aborted) {
+            setIsSearching(false);
+          }
         }
       };
 
@@ -74,19 +104,24 @@ export default function Home() {
       setSearchResults([]);
       setSearchError(false);
     }
+
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    };
   }, [query]);
 
   const displayedRestaurants = useMemo(() => {
     if (query.length > 2 && searchResults.length > 0) {
       return searchResults;
     }
-    // If search active but no results (and no error), handled by length check below
     if (query.length > 2 && searchResults.length === 0 && !isSearching && !searchError) {
       return [];
     }
-    // Default show all (static data for now)
-    return restaurants;
-  }, [query, searchResults, isSearching, searchError]);
+    return allRestaurants;
+  }, [query, searchResults, isSearching, searchError, allRestaurants]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -124,14 +159,12 @@ export default function Home() {
           <RestaurantCard
             key={restaurant.id}
             restaurant={restaurant}
-            // Logic for 'isRecommended' was based on AI returns names.
-            // Here we can just highlight all results as valid matches.
             isRecommended={false}
           />
         ))}
       </div>
 
-      {isSearching && (
+      {(isSearching || isLoadingRestaurants) && displayedRestaurants.length === 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="flex flex-col space-y-3">
@@ -145,7 +178,7 @@ export default function Home() {
         </div>
       )}
 
-      {displayedRestaurants.length === 0 && !isSearching && query.length > 2 && (
+      {displayedRestaurants.length === 0 && !isSearching && !isLoadingRestaurants && query.length > 2 && (
         <div className="text-center col-span-full py-12">
           <p className="text-muted-foreground text-lg">No restaurants found matching your search.</p>
         </div>

@@ -16,7 +16,8 @@ const pool = new Pool({
   ssl: useSSL ? { rejectUnauthorized: false } : false,
   max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  // Neon cold starts can exceed 2s; keep this configurable and less aggressive.
+  connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT_MS || '10000', 10),
 });
 
 pool.on('connect', () => console.log('Connected to PostgreSQL'));

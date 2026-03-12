@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Package, Loader2 } from 'lucide-react';
 import { api } from '@/config/api';
-import type { Order } from '@/config/api';
+import type { Order } from '@/types';
 import { useState, useEffect } from 'react';
 
 type OrderStatus = Order['status'];

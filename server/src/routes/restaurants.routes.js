@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
     const offset = (parseInt(req.query.page) || 0) * limit;
 
     const result = await pool.query(
-      'SELECT id, name, description, cuisine_type, rating, delivery_time, address, created_at FROM restaurants WHERE is_active = true ORDER BY rating DESC LIMIT $1 OFFSET $2',
+      'SELECT id, name, description, cuisine_type, rating, delivery_time, image_url, address, created_at FROM restaurants WHERE is_active = true ORDER BY rating DESC LIMIT $1 OFFSET $2',
       [limit, offset]
     );
 

@@ -3,6 +3,7 @@
 import OrderSummary from '@/components/OrderSummary';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/config/api';
@@ -18,14 +19,16 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [deliveryNotes, setDeliveryNotes] = useState('');
 
   const deliveryTime = useMemo(() => {
     if (cartItems.length === 0) return 0;
 
     const restaurantIds = new Set<string>();
     cartItems.forEach(item => {
-      const restaurantId = item.id.split('-')[0];
-      restaurantIds.add(restaurantId);
+      const rid = item.restaurantId ?? item.id.split('-')[0];
+      restaurantIds.add(rid);
     });
 
     const deliveryTimes = Array.from(restaurantIds).map(id => {
@@ -36,26 +39,7 @@ export default function CheckoutPage() {
     return Math.max(...deliveryTimes, 0);
   }, [cartItems]);
 
-  if (cartItems.length === 0) {
-    return (
-      <div className="container mx-auto px-4 py-8 text-center">
-         <div className="max-w-md mx-auto bg-card p-8 rounded-lg shadow-lg">
-            <ShoppingCart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h1 className="font-headline text-3xl mb-2">Your Cart is Empty</h1>
-            <p className="text-muted-foreground mb-6">
-              You need to add items to your cart before you can check out.
-            </p>
-            <Button asChild>
-              <Link href="/">Browse Restaurants</Link>
-            </Button>
-          </div>
-      </div>
-    );
-  }
-
   const handlePlaceOrder = async () => {
-    // Redirect to login if not authenticated.
-    // The backend POST /api/orders requires verifyToken (server/src/routes/orders.routes.js:8).
     if (!isAuthenticated) {
       router.push('/login');
       return;
@@ -65,13 +49,11 @@ export default function CheckoutPage() {
     setError(null);
 
     try {
-      // Group cart items by restaurant.
-      // Cart item IDs use format "restaurantId-itemId" (verified in src/lib/data.ts:29+).
-      // One order per restaurant (user chose Option A).
       const itemsByRestaurant = new Map<number, typeof cartItems>();
 
       for (const item of cartItems) {
-        const restaurantId = parseInt(item.id.split('-')[0], 10);
+        const rid = item.restaurantId ?? item.id.split('-')[0];
+        const restaurantId = parseInt(rid, 10);
         if (!itemsByRestaurant.has(restaurantId)) {
           itemsByRestaurant.set(restaurantId, []);
         }
@@ -91,7 +73,13 @@ export default function CheckoutPage() {
             (sum, item) => sum + item.price * item.quantity,
             0
           );
-          return api.orders.create(restaurantId, orderItems, totalAmount);
+          return api.orders.create(
+            restaurantId,
+            orderItems,
+            totalAmount,
+            deliveryAddress || undefined,
+            deliveryNotes || undefined,
+          );
         }
       );
 
@@ -125,13 +113,33 @@ export default function CheckoutPage() {
         return;
       }
 
+      const totalAmount = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
       clearCart();
-      router.push('/confirmation');
+      router.push(`/confirmation?total=${totalAmount.toFixed(2)}&items=${itemCount}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.');
       setIsSubmitting(false);
     }
   };
+
+  if (cartItems.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+         <div className="max-w-md mx-auto bg-card p-8 rounded-lg shadow-lg">
+            <ShoppingCart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <h1 className="font-headline text-3xl mb-2">Your Cart is Empty</h1>
+            <p className="text-muted-foreground mb-6">
+              You need to add items to your cart before you can check out.
+            </p>
+            <Button asChild>
+              <Link href="/">Browse Restaurants</Link>
+            </Button>
+          </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -143,15 +151,39 @@ export default function CheckoutPage() {
           <OrderSummary />
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="font-headline text-2xl">Payment & Delivery</CardTitle>
+              <CardTitle className="font-headline text-2xl">Delivery Details</CardTitle>
               <CardDescription>
-                This is a demo application. No payment is required and form validation is intentionally skipped for simplicity.
+                Tell us where to deliver your order.
               </CardDescription>
             </CardHeader>
-            <CardContent>
-                <p>
-                  Your order will be delivered in approximately {deliveryTime} {deliveryTime === 1 ? 'minute' : 'minutes'}.
-                </p>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="delivery-address" className="text-sm font-medium">
+                  Delivery Address
+                </label>
+                <Input
+                  id="delivery-address"
+                  placeholder="123 Main St, Apt 4B, City, State"
+                  value={deliveryAddress}
+                  onChange={(e) => setDeliveryAddress(e.target.value)}
+                  disabled={isSubmitting}
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="delivery-notes" className="text-sm font-medium">
+                  Delivery Notes <span className="text-muted-foreground">(optional)</span>
+                </label>
+                <Input
+                  id="delivery-notes"
+                  placeholder="Ring the doorbell, leave at door, etc."
+                  value={deliveryNotes}
+                  onChange={(e) => setDeliveryNotes(e.target.value)}
+                  disabled={isSubmitting}
+                />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Estimated delivery in approximately {deliveryTime} {deliveryTime === 1 ? 'minute' : 'minutes'}.
+              </p>
             </CardContent>
           </Card>
 
